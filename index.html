@@ -28,27 +28,42 @@ body{position:relative;height:var(--appH,100%);overflow:hidden;overscroll-behavi
 /* ---------- CALCULADORA ---------- */
 #calc{background:#000}
 #hist{position:absolute;left:24px;top:calc(var(--sat) + 22px);width:28px;height:24px}
-#pad{position:absolute;left:var(--pd);right:var(--pd);bottom:var(--bot);display:grid;grid-template-columns:repeat(4,var(--k));gap:var(--g);justify-content:space-between}
-.k{width:var(--k);height:var(--k);border-radius:50%;background:var(--dg);color:#fff;display:flex;align-items:center;justify-content:center;
-  font-size:calc(var(--k) * .47);font-weight:400;position:relative;transition:background .35s ease-out}
-.k.f{background:var(--fn);font-size:calc(var(--k) * .38)}
-.k.o{background:var(--or);font-size:calc(var(--k) * .6);font-weight:300}
+#pad{position:absolute;left:var(--pd);right:var(--pd);bottom:var(--bot);display:grid;grid-template-columns:repeat(var(--cols),var(--kw));column-gap:var(--g);row-gap:var(--gv);justify-content:space-between}
+.k{width:var(--kw);height:var(--kh);border-radius:calc(var(--kh) / 2);background:var(--dg);color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:calc(var(--kh) * .47);font-weight:400;position:relative;transition:background .35s ease-out}
+.k.f{background:var(--fn);font-size:calc(var(--kh) * .38)}
+.k.o{background:var(--or);font-size:calc(var(--kh) * .6);font-weight:300}
 .k.p{transition:none;background:#737375}
 .k.f.p{background:#8e8e93}
 .k.o.p{background:#ffc66b}
 .k .lb{display:flex;align-items:center;justify-content:center;width:100%;height:100%;line-height:1}
 .k svg{display:block}
-.k .dot{position:absolute;left:50%;top:21%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#fff;display:none}
+.k .dot{position:absolute;left:50%;top:79%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:#fff;display:none}
+body.land .k .dot{top:80%}
 .k.mk .dot{display:block}
 .pm{position:relative;display:block;width:1em;height:1em;font-size:calc(var(--k) * .36)}
 .pm i{position:absolute;font-style:normal;line-height:1;font-weight:400}
 .pm .a{left:.06em;top:.02em;font-size:.62em}
 .pm .s{left:.3em;top:.1em;font-size:.78em;font-weight:300;transform:rotate(10deg)}
 .pm .b{left:.52em;top:.42em;font-size:.62em}
-#disp{position:absolute;left:var(--pd);right:var(--pd);bottom:calc(var(--bot) + var(--k) * 5 + var(--g) * 4 + 12px);text-align:right}
+#disp{position:absolute;left:var(--pd);right:var(--pd);bottom:var(--dispB);text-align:right}
 #expr{color:#8d8d92;font-size:27px;font-weight:400;height:34px;line-height:34px;white-space:nowrap;overflow:hidden;display:flex;justify-content:flex-end;margin:0 6px 10px 0}
 #main{font-weight:300;white-space:nowrap;overflow:hidden;display:flex;justify-content:flex-end;line-height:1.02;letter-spacing:-.5px;padding-right:2px}
 #main span,#expr span{flex:none}
+.k.hide{display:none}
+.ic{position:absolute;top:calc(var(--sat) + 24px);width:44px;height:44px;border-radius:50%;background:#1c1c1e;display:none;align-items:center;justify-content:center}
+#clk{left:max(38px,env(safe-area-inset-left))}
+#calIc{right:max(38px,env(safe-area-inset-right))}
+body.land .ic{display:flex}
+body.land #hist{display:none}
+body.land #expr{font-size:18px;height:24px;line-height:24px;margin:0 2px 2px 0}
+body.land .k{background:#353535}
+body.land .k.f{background:#5a5a5c}
+body.land .k.o{background:var(--or);font-size:calc(var(--kh) * .52)}
+body.land .k[data-k="bk"] svg{width:auto;height:calc(var(--kh) * .42)}
+body.land .k[data-k="pm"] svg{width:auto;height:calc(var(--kh) * .55)}
+body.land .k.f{font-size:calc(var(--kh) * .44)}
+body.land .k[data-k="pm"]{background:#353535}
 
 /* ---------- AJUSTES ---------- */
 #settings{background:#f2f2f7;color:#000;z-index:50}
@@ -72,6 +87,8 @@ body{position:relative;height:var(--appH,100%);overflow:hidden;overscroll-behavi
   <svg id="hist" viewBox="0 0 28 24" fill="none" stroke="#ff9f0a" stroke-width="2.2" stroke-linecap="round">
     <circle cx="3" cy="4" r="1.6" fill="#ff9f0a" stroke="none"/><circle cx="3" cy="12" r="1.6" fill="#ff9f0a" stroke="none"/><circle cx="3" cy="20" r="1.6" fill="#ff9f0a" stroke="none"/>
     <path d="M9 4h17M9 12h17M9 20h17"/></svg>
+  <div class="ic" id="clk"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 6.5V12H7.5"/></svg></div>
+  <div class="ic" id="calIc"><svg viewBox="0 0 22 30" width="16" height="22"><rect x="0" y="0" width="22" height="30" rx="4" fill="#fff"/><rect x="3.5" y="3.5" width="15" height="6" rx="1.2" fill="#1c1c1e"/><g fill="#1c1c1e"><circle cx="5.6" cy="14.5" r="1.7"/><circle cx="11" cy="14.5" r="1.7"/><circle cx="16.4" cy="14.5" r="1.7"/><circle cx="5.6" cy="19.4" r="1.7"/><circle cx="11" cy="19.4" r="1.7"/><circle cx="16.4" cy="19.4" r="1.7"/><circle cx="5.6" cy="24.3" r="1.7"/><circle cx="11" cy="24.3" r="1.7"/><circle cx="16.4" cy="24.3" r="1.7"/></g></svg></div>
   <div id="disp"><div id="expr"><span></span></div><div id="main"><span>0</span></div></div>
   <div id="pad"></div>
 </div>
@@ -86,7 +103,7 @@ body{position:relative;height:var(--appH,100%);overflow:hidden;overscroll-behavi
     </div>
     <div class="note">Até 10 dígitos. Depois que você digitar esse tanto de números (com qualquer conta: +, −, ×, ÷, e pode apertar = no meio), a tecla <b>⁺∕₋</b> vira <b>⁺∕₊</b> (próxima é soma) ou <b>⁻∕₋</b> (subtração) e aparece uma bolinha na tecla que diz quantos dígitos tem o número que falta (bolinha no 0 = 10). Aperte o sinal indicado e deixe a pessoa digitar qualquer coisa: o app mostra os números certos. No =, aparece o número final.<br>Se nada mudar, a diferença não cabe (mais de 10 dígitos) ou deu número quebrado: continue a conta.</div>
     <span class="st">Como usar</span>
-    <div class="note">• Ajustes: arraste dois dedos na tela.<br>• Se a pessoa apertar = antes de terminar, o app completa sozinho.<br>• Teclas a mais depois de completar o número não fazem nada.<br>• AC zera tudo e o efeito recomeça.</div>
+    <div class="note">• Ajustes: segure a tecla da calculadora (embaixo, à esquerda) por 1,5 s. Deitada: o ícone da calculadora em cima, à direita.<br>• Quando o sinal aparece, só ele funciona (×, ÷, o sinal oposto, % e ⁺∕₋ ficam travados).<br>• Na entrada final, qualquer toque em qualquer lugar da tela (vários dedos, celular virado) coloca o próximo dígito certo. A bolinha fica até completar.<br>• O = só funciona com o número completo (antes disso, conta como mais um toque). Toques a mais não fazem nada.<br>• AC zera tudo e o efeito recomeça.</div>
     <div class="ver" id="sVer"></div>
   </div>
 </div>
@@ -96,14 +113,21 @@ body{position:relative;height:var(--appH,100%);overflow:hidden;overscroll-behavi
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
 const isStandalone=window.navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
 if(isStandalone)document.documentElement.classList.add('sa');
-const VER='Versão 1';
+const VER='Versão 2';
 
 /* ---------- tamanho da tela e da calculadora ---------- */
 function fit(){const portrait=innerHeight>=innerWidth;let h=innerHeight;if(isStandalone&&portrait)h=Math.max(innerHeight,screen.height);
   const r=document.documentElement.style;r.setProperty('--appH',h+'px');
-  const W=innerWidth,pd=Math.round(W*.037),g=Math.round(W*.023),k=Math.floor((W-2*pd-3*g)/4);
-  r.setProperty('--pd',pd+'px');r.setProperty('--g',g+'px');r.setProperty('--k',k+'px');
-  r.setProperty('--bot',Math.round(h*.092)+'px');
+  const W=innerWidth,land=W>h;document.body.classList.toggle('land',land);
+  if(!land){const pd=Math.round(W*.037),g=Math.round(W*.023),k=Math.floor((W-2*pd-3*g)/4),bot=Math.round(h*.092);
+    r.setProperty('--cols',4);r.setProperty('--pd',pd+'px');r.setProperty('--g',g+'px');r.setProperty('--gv',g+'px');
+    r.setProperty('--kw',k+'px');r.setProperty('--kh',k+'px');r.setProperty('--bot',bot+'px');
+    r.setProperty('--dispB',(bot+k*5+g*4+12)+'px');}
+  else{const pd=Math.round(W*.089),g=Math.round(W*.0092),kw=Math.floor((W-2*pd-4*g)/5),kh=Math.round(h*.121),gv=Math.round(h*.019),bot=Math.round(h*.07);
+    r.setProperty('--cols',5);r.setProperty('--pd',pd+'px');r.setProperty('--g',g+'px');r.setProperty('--gv',gv+'px');
+    r.setProperty('--kw',kw+'px');r.setProperty('--kh',kh+'px');r.setProperty('--bot',bot+'px');
+    r.setProperty('--dispB',(bot+kh*4+gv*3+Math.round(h*.04))+'px');}
+  layoutKeys(land);
   if(window.scrollX||window.scrollY)window.scrollTo(0,0);render();}
 ['resize','orientationchange','pageshow','focus'].forEach(ev=>addEventListener(ev,()=>{fit();setTimeout(fit,300);}));
 addEventListener('scroll',()=>{if(window.scrollY||window.scrollX)window.scrollTo(0,0);},{passive:true});
@@ -126,15 +150,19 @@ const CALC='<svg viewBox="0 0 22 30" width="30%"><rect x="0" y="0" width="22" he
   [0,1,2].map(r=>[0,1,2].map(c=>'<circle cx="'+(5.6+c*5.4)+'" cy="'+(14.5+r*4.9)+'" r="1.7" fill="#2a2a2c"/>').join('')).join('')+'</svg>';
 const PM=(a,b)=>{const g=(t,x,y)=>t==='+'?'<path d="M'+(x-4.2)+' '+y+'h8.4M'+x+' '+(y-4.2)+'v8.4"/>':'<path d="M'+(x-4.2)+' '+y+'h8.4"/>';
   return '<svg viewBox="0 0 30 30" width="34%" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round">'+g(a,8.5,9)+'<path d="M19 6.5L11 23.5" stroke-width="1.7"/>'+g(b,21.5,21)+'</svg>';};
+/* id, tipo, rótulo, [linha,coluna em pé], [linha,coluna deitada] (null = não aparece) */
 const KEYS=[
-  ['ac','f','AC'],['pm','f',PM('+','−')],['pc','f','%'],['÷','o','÷'],
-  ['7','n','7'],['8','n','8'],['9','n','9'],['×','o','×'],
-  ['4','n','4'],['5','n','5'],['6','n','6'],['-','o','−'],
-  ['1','n','1'],['2','n','2'],['3','n','3'],['+','o','+'],
-  ['cal','n',CALC],['0','n','0'],[',','n',','],['=','o','=']];
-const pad=$('#pad'),K={};
-KEYS.forEach(([id,cls,lab])=>{const b=document.createElement('div');b.className='k'+(cls==='f'?' f':cls==='o'?' o':'');b.dataset.k=id;
-  b.innerHTML='<i class="dot"></i><span class="lb">'+lab+'</span>';pad.appendChild(b);K[id]=b;});
+  ['ac','f','AC',[1,1],[2,4]],['pm','f',PM('+','−'),[1,2],[4,1]],['pc','f','%',[1,3],[3,4]],['÷','o','÷',[1,4],[1,5]],
+  ['7','n','7',[2,1],[1,1]],['8','n','8',[2,2],[1,2]],['9','n','9',[2,3],[1,3]],['×','o','×',[2,4],[2,5]],
+  ['4','n','4',[3,1],[2,1]],['5','n','5',[3,2],[2,2]],['6','n','6',[3,3],[2,3]],['-','o','−',[3,4],[3,5]],
+  ['1','n','1',[4,1],[3,1]],['2','n','2',[4,2],[3,2]],['3','n','3',[4,3],[3,3]],['+','o','+',[4,4],[4,5]],
+  ['cal','n',CALC,[5,1],null],['0','n','0',[5,2],[4,2]],[',','n',',',[5,3],[4,3]],['=','o','=',[5,4],[4,4]],
+  ['bk','f',BK,null,[1,4]]];
+const pad=$('#pad'),K={};let isLand=false;
+KEYS.forEach(([id,cls,lab,pp,lp])=>{const b=document.createElement('div');b.className='k'+(cls==='f'?' f':cls==='o'?' o':'');b.dataset.k=id;
+  b._pp=pp;b._lp=lp;b.innerHTML='<i class="dot"></i><span class="lb">'+lab+'</span>';pad.appendChild(b);K[id]=b;});
+function layoutKeys(land){isLand=land;Object.values(K).forEach(b=>{const p=land?b._lp:b._pp;b.classList.toggle('hide',!p);
+  if(p){b.style.gridRow=p[0];b.style.gridColumn=p[1];}});}
 
 /* ---------- motor da calculadora ---------- */
 let tokens=[],entry=null,justEval=false,result=0,exprShown='',count=0,force=null,pend=null;
@@ -171,6 +199,9 @@ function computePend(){pend=null;if(force)return;
   pend={sign:d>0?'+':'-',diff:ds};}
 
 function press(id){
+  if(pend&&(id==='×'||id==='÷'||id==='pc'||id==='pm'||(isOp(id)&&id!==pend.sign)))return; /* só o sinal indicado */
+  if(id==='bk')return backspace();
+  if(id==='ac'&&isLand)return clearAll();
   if(/^[0-9]$/.test(id))return digit(id);
   switch(id){
     case ',':return comma();
@@ -199,6 +230,7 @@ function oper(op){
   if(isOp(tokens[tokens.length-1]))tokens[tokens.length-1]=op;else tokens.push(op);
   if(arm)force={diff:arm.diff,shown:0};}
 function equals(){
+  if(force&&force.shown<force.diff.length)return;
   const wasForce=!!force;finishForce();
   if(justEval)return;
   if(entry!=null&&entry!==''&&entry!=='-')tokens.push(entryNum(entry));
@@ -207,11 +239,9 @@ function equals(){
   exprShown=exprText(false);result=evalTokens(tokens);
   if(wasForce){const T=parseInt(digitsOnly(cfg.target),10);if(isFinite(T))result=T;count=0;}
   tokens=[];entry=null;justEval=true;}
-function acDel(){
-  if(entry!=null&&entry!==''){ /* apagar (⌫) */
-    if(force){force.shown=Math.max(0,force.shown-1);entry=force.diff.slice(0,force.shown);return;}
-    entry=entry.slice(0,-1);if(entry===''||entry==='-'){entry=null;count=Math.max(0,count-1);}return;}
-  tokens=[];entry=null;justEval=false;result=0;exprShown='';count=0;force=null;}
+function backspace(){if(entry!=null&&entry!==''){entry=entry.slice(0,-1);if(entry===''||entry==='-'){entry=null;count=Math.max(0,count-1);}}}
+function clearAll(){tokens=[];entry=null;justEval=false;result=0;exprShown='';count=0;force=null;}
+function acDel(){if(entry!=null&&entry!=='')return backspace();clearAll();}
 function plusMinus(){if(force)return;
   if(justEval){result=-result;return;}
   if(entry==null){entry='-';count++;return;}
@@ -229,30 +259,38 @@ function render(){
   if(justEval){m=fmt(result);ex.textContent=exprShown;}
   else{ex.textContent='';m=exprText(true);if(m===''||m==='-')m=(m||'')+'0';}
   main.textContent=m;
-  const W=innerWidth;fitText($('#main'),Math.round(W*.185),Math.round(W*.09));
+  const W=innerWidth;fitText($('#main'),isLand?Math.round(innerHeight*.11):Math.round(W*.185),isLand?16:Math.round(W*.09));
   computePend();
   /* tecla AC / apagar */
-  const del=entry!=null&&entry!=='';K.ac.querySelector('.lb').innerHTML=del?BK:'AC';
+  const del=!isLand&&entry!=null&&entry!=='';K.ac.querySelector('.lb').innerHTML=del?BK:'AC';
   /* sinal disfarçado */
   K.pm.querySelector('.lb').innerHTML=pend?(pend.sign==='+'?PM('+','+'):PM('−','−')):PM('+','−');
   $$('.k.mk').forEach(k=>k.classList.remove('mk'));
-  if(pend){const n=pend.diff.length;K[String(n%10)].classList.add('mk');}
+  const mark=pend?pend.diff:(force&&force.shown<force.diff.length?force.diff:null);
+  if(mark)K[String(mark.length%10)].classList.add('mk');
 }
 
 /* ---------- toques ---------- */
-let multi=false;
 $$('.k').forEach(b=>{
-  b.addEventListener('pointerdown',e=>{if(multi||!e.isPrimary)return;e.preventDefault();b.classList.add('p');b._down=true;try{b.setPointerCapture(e.pointerId);}catch(_){}});
-  b.addEventListener('pointerup',e=>{b.classList.remove('p');if(!b._down)return;b._down=false;if(multi)return;
+  b.addEventListener('pointerdown',e=>{e.preventDefault();b.classList.add('p');b._down=true;try{b.setPointerCapture(e.pointerId);}catch(_){}});
+  b.addEventListener('pointerup',e=>{b.classList.remove('p');if(!b._down)return;b._down=false;if(lpFired){lpFired=false;return;}
     const r=b.getBoundingClientRect();if(e.clientX<r.left-20||e.clientX>r.right+20||e.clientY<r.top-20||e.clientY>r.bottom+20)return;
     press(b.dataset.k);render();});
   b.addEventListener('pointercancel',()=>{b.classList.remove('p');b._down=false;});});
 
-/* ---------- dois dedos: ajustes ---------- */
-let t2=null;const avg=t=>({x:(t[0].clientX+t[1].clientX)/2,y:(t[0].clientY+t[1].clientY)/2});
-document.addEventListener('touchstart',e=>{if(e.touches.length>=2){multi=true;t2=avg(e.touches);$$('.k.p').forEach(k=>{k.classList.remove('p');k._down=false;});}},{passive:true,capture:true});
-document.addEventListener('touchmove',e=>{if(t2&&e.touches.length>=2&&!$('#settings').classList.contains('on')){const a=avg(e.touches);if(Math.hypot(a.x-t2.x,a.y-t2.y)>60){t2=null;openSettings();}}},{passive:true,capture:true});
-document.addEventListener('touchend',e=>{if(e.touches.length===0){t2=null;setTimeout(()=>multi=false,80);}},{passive:true,capture:true});
+/* entrada final: qualquer toque em qualquer lugar = próximo dígito certo */
+$('#calc').addEventListener('pointerdown',e=>{if(!force)return;e.preventDefault();e.stopPropagation();
+  const k=e.target.closest&&e.target.closest('.k');
+  if(force.shown>=force.diff.length){if(k&&k.dataset.k==='='){flash(k);equals();render();}return;}
+  force.shown++;entry=force.diff.slice(0,force.shown);if(k)flash(k);render();},{capture:true});
+function flash(k){k.classList.add('p');setTimeout(()=>k.classList.remove('p'),90);}
+
+/* ajustes: segurar a tecla da calculadora 1,5 s */
+let lpT=null,lpFired=false;
+function longPress(el){el.addEventListener('pointerdown',()=>{if(force)return;clearTimeout(lpT);lpFired=false;
+    lpT=setTimeout(()=>{lpFired=true;$$('.k.p').forEach(k=>{k.classList.remove('p');k._down=false;});openSettings();},1500);});
+  ['pointerup','pointercancel','pointerleave'].forEach(ev=>el.addEventListener(ev,()=>clearTimeout(lpT)));}
+longPress(K.cal);longPress($('#calIc'));
 
 const sel=$('#sCount');for(let i=1;i<=9;i++){const o=document.createElement('option');o.value=i;o.textContent=i;sel.appendChild(o);}
 function openSettings(){$('#sTarget').value=cfg.target;$('#sCount').value=String(cfg.count);
