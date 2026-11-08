@@ -103,7 +103,7 @@ body.land .k[data-k="pm"]{background:#353535}
     </div>
     <div class="note">Até 10 dígitos. Depois que você digitar esse tanto de números (com qualquer conta: +, −, ×, ÷, e pode apertar = no meio), a tecla <b>⁺∕₋</b> vira <b>⁺∕₊</b> (próxima é soma) ou <b>⁻∕₋</b> (subtração) e aparece uma bolinha na tecla que diz quantos dígitos tem o número que falta (bolinha no 0 = 10). Aperte o sinal indicado e deixe a pessoa digitar qualquer coisa: o app mostra os números certos. No =, aparece o número final.<br>Se nada mudar, a diferença não cabe (mais de 10 dígitos) ou deu número quebrado: continue a conta.</div>
     <span class="st">Como usar</span>
-    <div class="note">• Ajustes: segure a tecla da calculadora (embaixo, à esquerda) por 1,5 s. Deitada: o ícone da calculadora em cima, à direita.<br>• Quando o sinal aparece, só ele funciona (×, ÷, o sinal oposto, % e ⁺∕₋ ficam travados).<br>• Na entrada final, qualquer toque em qualquer lugar da tela (vários dedos, celular virado) coloca o próximo dígito certo. A bolinha fica até completar.<br>• O = só funciona com o número completo (antes disso, conta como mais um toque). Toques a mais não fazem nada.<br>• AC zera tudo e o efeito recomeça.</div>
+    <div class="note">• Ajustes: segure a tecla da calculadora (embaixo, à esquerda) por 1,5 s. Deitada: o ícone da calculadora em cima, à direita.<br>• Quando o sinal aparece, só ele funciona (×, ÷, o sinal oposto, % e ⁺∕₋ ficam travados).<br>• Dica: depois do último número aperte <b>=</b>; a partir daí tudo fica travado (até os números) até você apertar o sinal certo. Só o AC continua funcionando.<br>• Na entrada final, qualquer toque em qualquer lugar da tela (vários dedos, celular virado) coloca o próximo dígito certo. A bolinha fica até completar.<br>• O = só funciona com o número completo (antes disso, conta como mais um toque). Toques a mais não fazem nada.<br>• AC zera tudo e o efeito recomeça.</div>
     <div class="ver" id="sVer"></div>
   </div>
 </div>
@@ -113,7 +113,7 @@ body.land .k[data-k="pm"]{background:#353535}
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
 const isStandalone=window.navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
 if(isStandalone)document.documentElement.classList.add('sa');
-const VER='Versão 2';
+const VER='Versão 3';
 
 /* ---------- tamanho da tela e da calculadora ---------- */
 function fit(){const portrait=innerHeight>=innerWidth;let h=innerHeight;if(isStandalone&&portrait)h=Math.max(innerHeight,screen.height);
@@ -200,6 +200,7 @@ function computePend(){pend=null;if(force)return;
 
 function press(id){
   if(pend&&(id==='×'||id==='÷'||id==='pc'||id==='pm'||(isOp(id)&&id!==pend.sign)))return; /* só o sinal indicado */
+  if(pend&&justEval&&id!==pend.sign&&id!=='ac'&&id!=='cal')return; /* depois do =: tudo travado até apertar o sinal certo */
   if(id==='bk')return backspace();
   if(id==='ac'&&isLand)return clearAll();
   if(/^[0-9]$/.test(id))return digit(id);
