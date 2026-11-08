@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Calculadora">
+<meta name="theme-color" content="#000000">
+<meta name="format-detection" content="telephone=no">
+<title>Calculadora</title>
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--or:#ff9f0a;--fn:#5c5c5f;--dg:#2a2a2c}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;background:#000;overflow:hidden;overscroll-behavior:none}
+/* iOS 26 (WebKit 301108): documento precisa ser da altura da tela para ganhar a tela inteira */
+@media (display-mode: standalone){html{min-height:min(100lvh,calc(100% + env(safe-area-inset-top,0px)))}body{min-height:calc(100vh + env(safe-area-inset-top,0px))}}
+html.sa{min-height:min(100lvh,calc(100% + env(safe-area-inset-top,0px)))}
+html.sa body{min-height:calc(100vh + env(safe-area-inset-top,0px))}
+body{position:relative;height:var(--appH,100%);overflow:hidden;overscroll-behavior:none;background:#000;color:#fff;
+  font-family:-apple-system,"SF Pro Display","SF Pro Text",system-ui,"Helvetica Neue",Arial,sans-serif;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none;-webkit-font-smoothing:antialiased}
+.screen{position:fixed;top:0;left:0;width:100%;height:var(--appH,100%);display:none;overflow:hidden}
+.screen.on{display:block}
+
+/* ---------- CALCULADORA ---------- */
+#calc{background:#000}
+#hist{position:absolute;left:24px;top:calc(var(--sat) + 22px);width:28px;height:24px}
+#pad{position:absolute;left:var(--pd);right:var(--pd);bottom:var(--bot);display:grid;grid-template-columns:repeat(4,var(--k));gap:var(--g);justify-content:space-between}
+.k{width:var(--k);height:var(--k);border-radius:50%;background:var(--dg);color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:calc(var(--k) * .47);font-weight:400;position:relative;transition:background .35s ease-out}
+.k.f{background:var(--fn);font-size:calc(var(--k) * .38)}
+.k.o{background:var(--or);font-size:calc(var(--k) * .6);font-weight:300}
+.k.p{transition:none;background:#737375}
+.k.f.p{background:#8e8e93}
+.k.o.p{background:#ffc66b}
+.k .lb{display:flex;align-items:center;justify-content:center;width:100%;height:100%;line-height:1}
+.k svg{display:block}
+.k .dot{position:absolute;left:50%;top:21%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#fff;display:none}
+.k.mk .dot{display:block}
+.pm{position:relative;display:block;width:1em;height:1em;font-size:calc(var(--k) * .36)}
+.pm i{position:absolute;font-style:normal;line-height:1;font-weight:400}
+.pm .a{left:.06em;top:.02em;font-size:.62em}
+.pm .s{left:.3em;top:.1em;font-size:.78em;font-weight:300;transform:rotate(10deg)}
+.pm .b{left:.52em;top:.42em;font-size:.62em}
+#disp{position:absolute;left:var(--pd);right:var(--pd);bottom:calc(var(--bot) + var(--k) * 5 + var(--g) * 4 + 12px);text-align:right}
+#expr{color:#8d8d92;font-size:27px;font-weight:400;height:34px;line-height:34px;white-space:nowrap;overflow:hidden;display:flex;justify-content:flex-end;margin:0 6px 10px 0}
+#main{font-weight:300;white-space:nowrap;overflow:hidden;display:flex;justify-content:flex-end;line-height:1.02;letter-spacing:-.5px;padding-right:2px}
+#main span,#expr span{flex:none}
+
+/* ---------- AJUSTES ---------- */
+#settings{background:#f2f2f7;color:#000;z-index:50}
+.shead{position:absolute;top:0;left:0;right:0;height:calc(var(--sat) + 52px);padding:var(--sat) 14px 0;display:flex;align-items:center;justify-content:flex-end;background:#f2f2f7;z-index:2}
+.shead b{font-size:17px;font-weight:600;position:absolute;left:70px;right:70px;text-align:center;bottom:15px}
+.shead button{font-size:17px;color:#0a7aff;background:none;border:0;position:relative;z-index:1;font-weight:600}
+.sc{position:absolute;top:calc(var(--sat) + 52px);left:0;right:0;bottom:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px calc(var(--sab) + 30px)}
+.st{display:block;font-size:13px;color:#6d6d72;text-transform:uppercase;margin:22px 16px 6px}
+.box{background:#fff;border-radius:12px;overflow:hidden}
+.row{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:.5px solid #e1e1e6;font-size:16px;gap:10px;min-height:46px}
+.row:last-child{border-bottom:0}
+.row input,.row select{font-size:17px;border:0;background:none;text-align:right;color:#0a7aff;font-family:inherit;outline:none;min-width:0}
+.row input{flex:1;max-width:60%}
+.note{font-size:13px;color:#6d6d72;margin:6px 16px 0;line-height:1.4}
+.ver{font-size:12px;color:#8e8e93;text-align:center;margin-top:26px}
+</style>
+</head>
+<body>
+
+<div id="calc" class="screen on">
+  <svg id="hist" viewBox="0 0 28 24" fill="none" stroke="#ff9f0a" stroke-width="2.2" stroke-linecap="round">
+    <circle cx="3" cy="4" r="1.6" fill="#ff9f0a" stroke="none"/><circle cx="3" cy="12" r="1.6" fill="#ff9f0a" stroke="none"/><circle cx="3" cy="20" r="1.6" fill="#ff9f0a" stroke="none"/>
+    <path d="M9 4h17M9 12h17M9 20h17"/></svg>
+  <div id="disp"><div id="expr"><span></span></div><div id="main"><span>0</span></div></div>
+  <div id="pad"></div>
+</div>
+
+<div id="settings" class="screen">
+  <div class="shead"><b>Ajustes</b><button id="sDone">OK</button></div>
+  <div class="sc">
+    <span class="st">Número forçado</span>
+    <div class="box">
+      <div class="row">Número final<input type="text" id="sTarget" inputmode="numeric" maxlength="10" placeholder="ex.: 1234567"></div>
+      <div class="row">Quantidade de números<select id="sCount"></select></div>
+    </div>
+    <div class="note">Até 10 dígitos. Depois que você digitar esse tanto de números (com qualquer conta: +, −, ×, ÷, e pode apertar = no meio), a tecla <b>⁺∕₋</b> vira <b>⁺∕₊</b> (próxima é soma) ou <b>⁻∕₋</b> (subtração) e aparece uma bolinha na tecla que diz quantos dígitos tem o número que falta (bolinha no 0 = 10). Aperte o sinal indicado e deixe a pessoa digitar qualquer coisa: o app mostra os números certos. No =, aparece o número final.<br>Se nada mudar, a diferença não cabe (mais de 10 dígitos) ou deu número quebrado: continue a conta.</div>
+    <span class="st">Como usar</span>
+    <div class="note">• Ajustes: arraste dois dedos na tela.<br>• Se a pessoa apertar = antes de terminar, o app completa sozinho.<br>• Teclas a mais depois de completar o número não fazem nada.<br>• AC zera tudo e o efeito recomeça.</div>
+    <div class="ver" id="sVer"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
+const isStandalone=window.navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+if(isStandalone)document.documentElement.classList.add('sa');
+const VER='Versão 1';
+
+/* ---------- tamanho da tela e da calculadora ---------- */
+function fit(){const portrait=innerHeight>=innerWidth;let h=innerHeight;if(isStandalone&&portrait)h=Math.max(innerHeight,screen.height);
+  const r=document.documentElement.style;r.setProperty('--appH',h+'px');
+  const W=innerWidth,pd=Math.round(W*.037),g=Math.round(W*.023),k=Math.floor((W-2*pd-3*g)/4);
+  r.setProperty('--pd',pd+'px');r.setProperty('--g',g+'px');r.setProperty('--k',k+'px');
+  r.setProperty('--bot',Math.round(h*.092)+'px');
+  if(window.scrollX||window.scrollY)window.scrollTo(0,0);render();}
+['resize','orientationchange','pageshow','focus'].forEach(ev=>addEventListener(ev,()=>{fit();setTimeout(fit,300);}));
+addEventListener('scroll',()=>{if(window.scrollY||window.scrollX)window.scrollTo(0,0);},{passive:true});
+if(window.visualViewport){visualViewport.addEventListener('resize',fit);visualViewport.addEventListener('scroll',()=>window.scrollTo(0,0));}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){fit();setTimeout(fit,300);}});
+document.addEventListener('touchmove',e=>{if(!e.target.closest('.sc'))e.preventDefault();},{passive:false});
+document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('dblclick',e=>e.preventDefault());
+
+/* ---------- ajustes guardados ---------- */
+const mem={};
+const store={get(k,d){try{const v=localStorage.getItem('calc_'+k);if(v!=null)return JSON.parse(v);}catch(e){}return(k in mem)?mem[k]:d;},
+  set(k,v){mem[k]=v;try{localStorage.setItem('calc_'+k,JSON.stringify(v));}catch(e){}}};
+let cfg=Object.assign({target:'1234567',count:3},store.get('cfg',{}));
+const save=()=>store.set('cfg',cfg);
+
+/* ---------- teclado ---------- */
+const BK='<svg viewBox="0 0 34 26" width="38%" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><path d="M11 3h18a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H11L2 13z"/><path d="M15.5 8.5l9 9M24.5 8.5l-9 9"/></svg>';
+const CALC='<svg viewBox="0 0 22 30" width="30%"><rect x="0" y="0" width="22" height="30" rx="4" fill="#fff"/><rect x="3.5" y="3.5" width="15" height="6" rx="1.2" fill="#2a2a2c"/>'+
+  [0,1,2].map(r=>[0,1,2].map(c=>'<circle cx="'+(5.6+c*5.4)+'" cy="'+(14.5+r*4.9)+'" r="1.7" fill="#2a2a2c"/>').join('')).join('')+'</svg>';
+const PM=(a,b)=>{const g=(t,x,y)=>t==='+'?'<path d="M'+(x-4.2)+' '+y+'h8.4M'+x+' '+(y-4.2)+'v8.4"/>':'<path d="M'+(x-4.2)+' '+y+'h8.4"/>';
+  return '<svg viewBox="0 0 30 30" width="34%" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round">'+g(a,8.5,9)+'<path d="M19 6.5L11 23.5" stroke-width="1.7"/>'+g(b,21.5,21)+'</svg>';};
+const KEYS=[
+  ['ac','f','AC'],['pm','f',PM('+','−')],['pc','f','%'],['÷','o','÷'],
+  ['7','n','7'],['8','n','8'],['9','n','9'],['×','o','×'],
+  ['4','n','4'],['5','n','5'],['6','n','6'],['-','o','−'],
+  ['1','n','1'],['2','n','2'],['3','n','3'],['+','o','+'],
+  ['cal','n',CALC],['0','n','0'],[',','n',','],['=','o','=']];
+const pad=$('#pad'),K={};
+KEYS.forEach(([id,cls,lab])=>{const b=document.createElement('div');b.className='k'+(cls==='f'?' f':cls==='o'?' o':'');b.dataset.k=id;
+  b.innerHTML='<i class="dot"></i><span class="lb">'+lab+'</span>';pad.appendChild(b);K[id]=b;});
+
+/* ---------- motor da calculadora ---------- */
+let tokens=[],entry=null,justEval=false,result=0,exprShown='',count=0,force=null,pend=null;
+const isOp=t=>t==='+'||t==='-'||t==='×'||t==='÷';
+const entryNum=s=>{if(s==null||s===''||s==='-')return 0;return parseFloat(s.replace(',','.'));};
+function evalTokens(t){ /* respeita × e ÷ antes de + e − (como a calculadora nova do iPhone) */
+  const a=t.slice();if(!a.length)return 0;if(isOp(a[a.length-1]))a.pop();
+  const s=[a[0]];for(let i=1;i<a.length;i+=2){const op=a[i],n=a[i+1];
+    if(op==='×')s[s.length-1]=s[s.length-1]*n;else if(op==='÷')s[s.length-1]=s[s.length-1]/n;else{s.push(op);s.push(n);}}
+  let v=s[0];for(let i=1;i<s.length;i+=2)v=s[i]==='+'?v+s[i+1]:v-s[i+1];
+  return Math.abs(v)<1e-12?0:v;}
+function group(intStr){return intStr.replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
+function fmt(n){if(!isFinite(n))return 'Erro';
+  const neg=n<0;n=Math.abs(n);let s;
+  if(n>=1e10){s=n.toExponential(5).replace(/\.?0+e/,'e').replace('e+','e').replace('.',',');return (neg?'-':'')+s;}
+  if(Number.isInteger(n))s=group(String(n));
+  else{const intLen=String(Math.floor(n)).length;let d=Math.max(0,10-intLen);s=n.toFixed(d).replace(/0+$/,'').replace(/\.$/,'');
+    const [i,f]=s.split('.');s=group(i)+(f?','+f:'');}
+  return (neg?'-':'')+s;}
+function fmtEntry(e){if(e==null)return'';const neg=e[0]==='-';let b=neg?e.slice(1):e;const [i,f]=b.split(',');
+  return (neg?'-':'')+group(i||'0')+(b.includes(',')?','+(f||''):'');}
+function exprText(withEntry){const p=tokens.map(t=>isOp(t)?t:fmt(t));if(withEntry&&entry!=null)p.push(fmtEntry(entry));return p.join('');}
+function curValue(){ /* valor se a pessoa apertasse = agora */
+  if(justEval)return result;const t=tokens.slice();if(entry!=null&&entry!=='')t.push(entryNum(entry));else if(t.length&&isOp(t[t.length-1]))return null;return evalTokens(t);}
+function digitsOnly(s){return (s||'').replace(/[^0-9]/g,'');}
+
+/* sinal disfarçado: depois do N-ésimo número */
+function computePend(){pend=null;if(force)return;
+  const T=parseInt(digitsOnly(cfg.target),10);if(!isFinite(T))return;
+  if(count<(+cfg.count||1))return;
+  if(!justEval&&(entry==null||entry===''||entry==='-'))return;
+  const v=curValue();if(v==null||!Number.isInteger(v))return;
+  const d=T-v;if(d===0)return;const ds=String(Math.abs(d));if(ds.length>10)return;
+  pend={sign:d>0?'+':'-',diff:ds};}
+
+function press(id){
+  if(/^[0-9]$/.test(id))return digit(id);
+  switch(id){
+    case ',':return comma();
+    case 'ac':return acDel();
+    case 'pm':return plusMinus();
+    case 'pc':return percent();
+    case '=':return equals();
+    case 'cal':return;
+    default:if(isOp(id))return oper(id);}}
+function startFresh(){if(justEval){tokens=[];justEval=false;exprShown='';}}
+function digit(d){
+  if(force){if(force.shown<force.diff.length){force.shown++;entry=force.diff.slice(0,force.shown);}return;}
+  startFresh();
+  if(entry==null){entry='';count++;}
+  if(digitsOnly(entry).length>=9)return;
+  if(entry==='0')entry='';if(entry==='-0')entry='-';
+  entry+=d;}
+function comma(){if(force)return;startFresh();if(entry==null){entry='0';count++;}if(entry===''||entry==='-')entry+='0';if(!entry.includes(','))entry+=',';}
+function finishForce(){if(force){entry=force.diff;force=null;}}
+function oper(op){
+  let arm=null;if(pend&&op===pend.sign)arm=pend;
+  finishForce();
+  if(justEval){tokens=[result];justEval=false;exprShown='';}
+  if(entry!=null&&entry!==''&&entry!=='-'){tokens.push(entryNum(entry));entry=null;}
+  else{entry=null;if(!tokens.length)tokens=[0];}
+  if(isOp(tokens[tokens.length-1]))tokens[tokens.length-1]=op;else tokens.push(op);
+  if(arm)force={diff:arm.diff,shown:0};}
+function equals(){
+  const wasForce=!!force;finishForce();
+  if(justEval)return;
+  if(entry!=null&&entry!==''&&entry!=='-')tokens.push(entryNum(entry));
+  if(!tokens.length)return;
+  if(isOp(tokens[tokens.length-1]))tokens.pop();
+  exprShown=exprText(false);result=evalTokens(tokens);
+  if(wasForce){const T=parseInt(digitsOnly(cfg.target),10);if(isFinite(T))result=T;count=0;}
+  tokens=[];entry=null;justEval=true;}
+function acDel(){
+  if(entry!=null&&entry!==''){ /* apagar (⌫) */
+    if(force){force.shown=Math.max(0,force.shown-1);entry=force.diff.slice(0,force.shown);return;}
+    entry=entry.slice(0,-1);if(entry===''||entry==='-'){entry=null;count=Math.max(0,count-1);}return;}
+  tokens=[];entry=null;justEval=false;result=0;exprShown='';count=0;force=null;}
+function plusMinus(){if(force)return;
+  if(justEval){result=-result;return;}
+  if(entry==null){entry='-';count++;return;}
+  entry=entry[0]==='-'?entry.slice(1):'-'+entry;}
+function percent(){if(force)return;
+  if(justEval){result=result/100;return;}
+  if(entry!=null&&entry!==''&&entry!=='-'){const v=entryNum(entry)/100;entry=fmt(v).replace(/\./g,'');}}
+
+/* ---------- desenhar ---------- */
+function fitText(el,max,min){const sp=el.firstChild;el.style.fontSize=max+'px';const w=el.clientWidth;let fs=max;
+  while(sp.scrollWidth>w&&fs>min){fs-=2;el.style.fontSize=fs+'px';}}
+function render(){
+  const main=$('#main span'),ex=$('#expr span');
+  let m;
+  if(justEval){m=fmt(result);ex.textContent=exprShown;}
+  else{ex.textContent='';m=exprText(true);if(m===''||m==='-')m=(m||'')+'0';}
+  main.textContent=m;
+  const W=innerWidth;fitText($('#main'),Math.round(W*.185),Math.round(W*.09));
+  computePend();
+  /* tecla AC / apagar */
+  const del=entry!=null&&entry!=='';K.ac.querySelector('.lb').innerHTML=del?BK:'AC';
+  /* sinal disfarçado */
+  K.pm.querySelector('.lb').innerHTML=pend?(pend.sign==='+'?PM('+','+'):PM('−','−')):PM('+','−');
+  $$('.k.mk').forEach(k=>k.classList.remove('mk'));
+  if(pend){const n=pend.diff.length;K[String(n%10)].classList.add('mk');}
+}
+
+/* ---------- toques ---------- */
+let multi=false;
+$$('.k').forEach(b=>{
+  b.addEventListener('pointerdown',e=>{if(multi||!e.isPrimary)return;e.preventDefault();b.classList.add('p');b._down=true;try{b.setPointerCapture(e.pointerId);}catch(_){}});
+  b.addEventListener('pointerup',e=>{b.classList.remove('p');if(!b._down)return;b._down=false;if(multi)return;
+    const r=b.getBoundingClientRect();if(e.clientX<r.left-20||e.clientX>r.right+20||e.clientY<r.top-20||e.clientY>r.bottom+20)return;
+    press(b.dataset.k);render();});
+  b.addEventListener('pointercancel',()=>{b.classList.remove('p');b._down=false;});});
+
+/* ---------- dois dedos: ajustes ---------- */
+let t2=null;const avg=t=>({x:(t[0].clientX+t[1].clientX)/2,y:(t[0].clientY+t[1].clientY)/2});
+document.addEventListener('touchstart',e=>{if(e.touches.length>=2){multi=true;t2=avg(e.touches);$$('.k.p').forEach(k=>{k.classList.remove('p');k._down=false;});}},{passive:true,capture:true});
+document.addEventListener('touchmove',e=>{if(t2&&e.touches.length>=2&&!$('#settings').classList.contains('on')){const a=avg(e.touches);if(Math.hypot(a.x-t2.x,a.y-t2.y)>60){t2=null;openSettings();}}},{passive:true,capture:true});
+document.addEventListener('touchend',e=>{if(e.touches.length===0){t2=null;setTimeout(()=>multi=false,80);}},{passive:true,capture:true});
+
+const sel=$('#sCount');for(let i=1;i<=9;i++){const o=document.createElement('option');o.value=i;o.textContent=i;sel.appendChild(o);}
+function openSettings(){$('#sTarget').value=cfg.target;$('#sCount').value=String(cfg.count);
+  $('#sVer').textContent=VER+' · '+(isStandalone?'app':'navegador');$('#settings').classList.add('on');
+  try{$('#settings').animate([{transform:'translateY(100%)'},{transform:'translateY(0)'}],{duration:300,easing:'cubic-bezier(.2,.8,.2,1)'});}catch(_){}}
+function closeSettings(){document.activeElement&&document.activeElement.blur&&document.activeElement.blur();
+  const s=$('#settings');let a=null;try{a=s.animate([{transform:'translateY(0)'},{transform:'translateY(100%)'}],{duration:260,easing:'ease-in'});}catch(_){}
+  const f=()=>{s.classList.remove('on');render();};if(a)a.onfinish=f;else f();}
+$('#sTarget').addEventListener('input',e=>{const v=digitsOnly(e.target.value).slice(0,10);if(e.target.value!==v)e.target.value=v;cfg.target=v;save();});
+$('#sCount').addEventListener('change',e=>{cfg.count=+e.target.value;save();});
+$('#sDone').addEventListener('click',closeSettings);
+if(location.hash==='#config')openSettings();
+
+window.__calc={press:id=>{press(id);render();},state:()=>({tokens,entry,justEval,result,count,force,pend,main:$('#main').textContent,expr:$('#expr').textContent})};
+fit();render();
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
