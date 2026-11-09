@@ -207,7 +207,7 @@ input[type=file]{display:none}
   </div>
   <img id="mhomeShot" alt="">
 </div>
-<div id="mplace" class="screen"><div class="mark" id="mplaceMark"></div><div class="msg" id="mplaceMsg">Toque no ícone da calculadora</div><div class="pbar"><button id="mpCancel">Cancelar</button></div></div>
+<div id="mplace" class="screen"><div class="mark" id="mplaceMark"></div><div class="pbar" id="mpBar" style="display:none"><button id="mpOk" style="background:#0a84ff">OK</button></div></div>
 <div id="settings" class="screen">
   <div class="shead"><b>Ajustes</b><button id="sDone">OK</button></div>
   <div class="sc">
@@ -261,7 +261,7 @@ input[type=file]{display:none}
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
 const isStandalone=window.navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
 if(isStandalone)document.documentElement.classList.add('sa');
-const VER='Versão 7.1';
+const VER='Versão 7.2';
 
 /* ---------- tamanho da tela e da calculadora ---------- */
 function fit(){const portrait=innerHeight>=innerWidth;let h=innerHeight;if(isStandalone&&portrait)h=Math.max(innerHeight,screen.height);
@@ -702,15 +702,15 @@ $('#fHome').addEventListener('change',async e=>{const f=e.target.files[0];e.targ
     applyMHome();cfg.mcal=null;save();calPosSt();startMPlace('cal');}catch(_){$('#sMsg2').textContent='Não consegui abrir essa imagem.';}});
 $('#bHomeDel').addEventListener('click',()=>{mHomeImg=null;storeImg('mhome',null);cfg.mcal=null;save();applyMHome();calPosSt();$('#sMsg2').textContent='Tela de ícones removida (volta a desenhada).';});
 /* localizar a calculadora no print */
-let mpDone=false,mpWhat='mcal';
-function startMPlace(what){mpWhat=what==='exit'?'mexit':'mcal';if(mpWhat==='mcal'&&!mHomeImg)return;mpDone=false;$('#mplaceMark').style.display='none';
-  $('#mplaceMsg').textContent=mpWhat==='mcal'?'Toque no ícone da calculadora':'Toque no ícone que vai voltar à tela bloqueada';
+let mpWhat='mcal',mpPos=null;
+function startMPlace(what){mpWhat=what==='exit'?'mexit':'mcal';if(mpWhat==='mcal'&&!mHomeImg)return;mpPos=null;
+  $('#mplaceMark').style.display='none';$('#mpBar').style.display='none';
   scrOff('settings');scrOn('mhome');scrOn('mplace');}
 function endMPlace(){scrOff('mplace');scrOff('mhome');calPosSt();$('#settings').classList.add('on');}
-$('#mplace').addEventListener('pointerdown',e=>{if(e.target.closest('.pbar')||mpDone)return;e.preventDefault();mpDone=true;
-  cfg[mpWhat]={x:e.clientX/innerWidth,y:e.clientY/innerHeight};save();const m=$('#mplaceMark');m.style.display='block';m.style.left=e.clientX+'px';m.style.top=e.clientY+'px';
-  $('#mplaceMsg').textContent='Salvo ✓';setTimeout(endMPlace,700);});
-$('#mpCancel').addEventListener('click',endMPlace);
+$('#mplace').addEventListener('pointerdown',e=>{if(e.target.closest('.pbar'))return;e.preventDefault(); /* toque marca (pode tocar de novo para mudar) */
+  mpPos={x:e.clientX/innerWidth,y:e.clientY/innerHeight};const m=$('#mplaceMark');m.style.display='block';m.style.left=e.clientX+'px';m.style.top=e.clientY+'px';
+  const bar=$('#mpBar');bar.style.display='flex';bar.style.bottom='auto';bar.style.left='32%';bar.style.right='32%';bar.style.top=(e.clientY>innerHeight/2?innerHeight*.38:innerHeight*.58)+'px';});
+$('#mpOk').addEventListener('click',()=>{if(mpPos){cfg[mpWhat]=mpPos;save();}endMPlace();});
 $('#bCalPos').addEventListener('click',()=>startMPlace('cal'));
 $('#bExitPos').addEventListener('click',()=>startMPlace('exit'));
 $('#bExitDel').addEventListener('click',()=>{cfg.mexit=null;save();calPosSt();});
