@@ -244,10 +244,11 @@ input[type=file]{display:none}
       <div class="row">Fundo da tela bloqueada<span><button class="btnR" id="bWall">Inserir</button><button class="btnR red" id="bWallDel">Remover</button></span></div>
       <div class="row">Tela de ícones<span><button class="btnR" id="bHome">Inserir</button><button class="btnR red" id="bHomeDel">Remover</button></span></div>
       <div class="row">Ícone da calculadora<span><span class="res" id="calPosSt"></span> <button class="btnR" id="bCalPos">Localizar</button></span></div>
+      <div class="row">Voltar à tela bloqueada<span><span class="res" id="exitPosSt"></span> <button class="btnR" id="bExitPos">Localizar</button> <button class="btnR red" id="bExitDel">Apagar</button></span></div>
     </div>
     <input type="file" id="fWall" accept="image/*"><input type="file" id="fHome" accept="image/*">
     <div class="note" id="sMsg2"></div>
-    <div class="note"><b>Como fazer:</b> 2 toques rápidos na tecla da calculadora e escolha <b>Mnemônica</b>. Na 1ª vez o iPhone pede para usar o movimento: toque em <b>Permitir</b>. Abre a tela bloqueada: deslize para cima e digite a carta no código (embaixo aparece fraquinho a carta, a posição e ✓ se o sensor está ligado; ✕ = desligado). Na tela de ícones, toque na calculadora.<br>• <b>Tela para cima:</b> calculadora normal.<br>• <b>Tela para baixo:</b> a pessoa toca 2 vezes em qualquer lugar. 1ª vez = número de 53 a 99. Aperte <b>AC</b>. 2ª vez = posição da carta (de costas, a partir da 1ª). Aperte <b>AC</b>. 3ª vez = posição com o baralho de face para cima.<br>• Se você aceitar a 2ª e fizer qualquer outra conta, ou depois da 3ª, a calculadora vira normal.<br>• Para sair da tela bloqueada sem fazer nada: segure o dedo nela 1,5 s.</div>
+    <div class="note"><b>Como fazer:</b> 2 toques rápidos na tecla da calculadora e escolha <b>Mnemônica</b>. Na 1ª vez o iPhone pede para usar o movimento: toque em <b>Permitir</b>. Abre a tela bloqueada: deslize para cima e digite a carta no código (embaixo aparece fraquinho a carta, a posição e ✓ se o sensor está ligado; ✕ = desligado). Na tela de ícones, toque na calculadora.<br>• <b>Tela para cima:</b> calculadora normal.<br>• <b>Tela para baixo:</b> a pessoa toca 2 vezes em qualquer lugar. 1ª vez = número de 53 a 99. Aperte <b>AC</b>. 2ª vez = posição da carta (de costas, a partir da 1ª). Aperte <b>AC</b>. 3ª vez = posição com o baralho de face para cima.<br>• Se você aceitar a 2ª e fizer qualquer outra conta, ou depois da 3ª, a calculadora vira normal.<br>• Para sair da tela bloqueada sem fazer nada: segure o dedo nela 1,5 s.<br>• Na tela de ícones, toque no ícone escolhido em "Voltar à tela bloqueada" (sem ponto definido: segure o dedo 1,5 s em qualquer lugar).</div>
 
     <span class="st">Como usar</span>
     <div class="note">• Tecla da calculadora (embaixo, à esquerda; deitada: o ícone em cima, à direita): <b>2 toques rápidos</b> = menu (Normal, Número, Nome, Mnemônica); <b>segurar 1,5 s</b> = Ajustes.<br>• Quando o sinal aparece, só ele funciona (×, ÷, o sinal oposto, % e ⁺∕₋ ficam travados).<br>• Dica: depois do último número aperte <b>=</b>; a partir daí tudo fica travado (até os números) até você apertar o sinal certo. Só o AC continua funcionando.<br>• Na entrada final, qualquer toque em qualquer lugar da tela (vários dedos, celular virado) coloca o próximo dígito certo. A bolinha fica até completar.<br>• O = só funciona com o número completo (antes disso, conta como mais um toque). Toques a mais não fazem nada.<br>• AC zera tudo e o efeito recomeça.</div>
@@ -260,7 +261,7 @@ input[type=file]{display:none}
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
 const isStandalone=window.navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
 if(isStandalone)document.documentElement.classList.add('sa');
-const VER='Versão 7';
+const VER='Versão 7.1';
 
 /* ---------- tamanho da tela e da calculadora ---------- */
 function fit(){const portrait=innerHeight>=innerWidth;let h=innerHeight;if(isStandalone&&portrait)h=Math.max(innerHeight,screen.height);
@@ -643,6 +644,16 @@ function mAddApp(a,host,label){const el=document.createElement('div');el.classNa
   el.addEventListener('click',()=>{if(a[4]==='calc')return openMCalc(el.querySelector('.mi'));el.classList.remove('bounce');void el.offsetWidth;el.classList.add('bounce');});
   host.appendChild(el);}
 MAPPS.forEach(a=>mAddApp(a,$('#mapps'),true));MDOCK.forEach(a=>mAddApp(a,$('#mdock'),false));
+/* voltar à tela bloqueada: ponto escolhido, ou segurar 1,5 s */
+let hHold=null,hXY=null,hEat=false;
+function homeToLock(){hEat=true;setTimeout(()=>hEat=false,600);scrOff('mhome');code='';drawMDots();$('#mlc').style.transform='';scrOn('mlock');
+  mAnim($('#mlock'),[{opacity:0,transform:'scale(1.06)'},{opacity:1,transform:'scale(1)'}],300);}
+$('#mhome').addEventListener('pointerdown',e=>{clearTimeout(hHold);if($('#mplace').classList.contains('on')||!e.isPrimary)return;
+  if(cfg.mexit){if(Math.hypot(e.clientX-cfg.mexit.x*innerWidth,e.clientY-cfg.mexit.y*innerHeight)<innerWidth*.09){e.preventDefault();e.stopPropagation();homeToLock();}return;}
+  hXY=[e.clientX,e.clientY];hHold=setTimeout(homeToLock,1500);},true);
+$('#mhome').addEventListener('pointermove',e=>{if(hXY&&Math.hypot(e.clientX-hXY[0],e.clientY-hXY[1])>12)clearTimeout(hHold);},true);
+['pointerup','pointercancel'].forEach(t=>$('#mhome').addEventListener(t,()=>clearTimeout(hHold),true));
+$('#mhome').addEventListener('click',e=>{if(hEat){e.stopPropagation();e.preventDefault();}},true);
 /* com print da tela: toque perto do ponto escolhido abre a calculadora */
 $('#mhomeShot').addEventListener('pointerdown',e=>{const c=cfg.mcal;if(!c)return;
   if(Math.hypot(e.clientX-c.x*innerWidth,e.clientY-c.y*innerHeight)<innerWidth*.11)openMCalc(null,c.x*innerWidth,c.y*innerHeight);});
@@ -675,7 +686,7 @@ $('#bTableReset').addEventListener('click',()=>{cfg.table=MN_DEF.map(c=>c.slice(
 function fillSuits(){$$('.sSuit').forEach(s=>{s.innerHTML=Object.keys(SUITS).map(k=>'<option value="'+k+'">'+SUITS[k].n+'</option>').join('');s.value=cfg.suits[+s.dataset.i];});
   $('#sEx').textContent=(cfg.suits.indexOf('S')+1)+'102 = 10 de Espadas';}
 $$('.sSuit').forEach(s=>s.addEventListener('change',()=>{const i=+s.dataset.i,v=s.value,j=cfg.suits.indexOf(v);if(j>-1&&j!==i)cfg.suits[j]=cfg.suits[i];cfg.suits[i]=v;save();fillSuits();}));
-function calPosSt(){$('#calPosSt').textContent=mHomeImg?(cfg.mcal?'definido ✓':'não definido'):'automático';$('#bCalPos').disabled=!mHomeImg;}
+function calPosSt(){$('#exitPosSt').textContent=cfg.mexit?'definido ✓':'segurar 1,5 s';$('#calPosSt').textContent=mHomeImg?(cfg.mcal?'definido ✓':'não definido'):'automático';$('#bCalPos').disabled=!mHomeImg;}
 function fillMn(){tableState();fillSuits();calPosSt();$('#sMsg2').textContent='';}
 function resizeImg(file,max,q){return new Promise((res,rej)=>{const u=URL.createObjectURL(file);const im=new Image();
   im.onload=()=>{const s=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight));const c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*s);c.height=Math.round(im.naturalHeight*s);
@@ -688,18 +699,21 @@ $('#bWallDel').addEventListener('click',()=>{mWall=null;storeImg('mwall',null);a
 $('#bHome').addEventListener('click',()=>$('#fHome').click());
 $('#fHome').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
   try{mHomeImg=await resizeImg(f,1400,.85);if(!storeImg('mhome',mHomeImg))$('#sMsg2').textContent='Sem espaço para salvar a tela de ícones.';
-    applyMHome();cfg.mcal=null;save();calPosSt();startMPlace();}catch(_){$('#sMsg2').textContent='Não consegui abrir essa imagem.';}});
+    applyMHome();cfg.mcal=null;save();calPosSt();startMPlace('cal');}catch(_){$('#sMsg2').textContent='Não consegui abrir essa imagem.';}});
 $('#bHomeDel').addEventListener('click',()=>{mHomeImg=null;storeImg('mhome',null);cfg.mcal=null;save();applyMHome();calPosSt();$('#sMsg2').textContent='Tela de ícones removida (volta a desenhada).';});
 /* localizar a calculadora no print */
-let mpDone=false;
-function startMPlace(){if(!mHomeImg)return;mpDone=false;$('#mplaceMark').style.display='none';$('#mplaceMsg').textContent='Toque no ícone da calculadora';
+let mpDone=false,mpWhat='mcal';
+function startMPlace(what){mpWhat=what==='exit'?'mexit':'mcal';if(mpWhat==='mcal'&&!mHomeImg)return;mpDone=false;$('#mplaceMark').style.display='none';
+  $('#mplaceMsg').textContent=mpWhat==='mcal'?'Toque no ícone da calculadora':'Toque no ícone que vai voltar à tela bloqueada';
   scrOff('settings');scrOn('mhome');scrOn('mplace');}
 function endMPlace(){scrOff('mplace');scrOff('mhome');calPosSt();$('#settings').classList.add('on');}
 $('#mplace').addEventListener('pointerdown',e=>{if(e.target.closest('.pbar')||mpDone)return;e.preventDefault();mpDone=true;
-  cfg.mcal={x:e.clientX/innerWidth,y:e.clientY/innerHeight};save();const m=$('#mplaceMark');m.style.display='block';m.style.left=e.clientX+'px';m.style.top=e.clientY+'px';
+  cfg[mpWhat]={x:e.clientX/innerWidth,y:e.clientY/innerHeight};save();const m=$('#mplaceMark');m.style.display='block';m.style.left=e.clientX+'px';m.style.top=e.clientY+'px';
   $('#mplaceMsg').textContent='Salvo ✓';setTimeout(endMPlace,700);});
 $('#mpCancel').addEventListener('click',endMPlace);
-$('#bCalPos').addEventListener('click',startMPlace);
+$('#bCalPos').addEventListener('click',()=>startMPlace('cal'));
+$('#bExitPos').addEventListener('click',()=>startMPlace('exit'));
+$('#bExitDel').addEventListener('click',()=>{cfg.mexit=null;save();calPosSt();});
 applyMWall();applyMHome();mTick();
 
 /* ---------- menu de modos: 2 toques rápidos na tecla da calculadora ---------- */
