@@ -410,7 +410,7 @@ function equals(){
   if(!tokens.length)return;
   if(isOp(tokens[tokens.length-1]))tokens.pop();
   eqCount++;exprShown=exprText(false);result=evalTokens(tokens);resultFmt=null;
-  if(wasForce){const T=parseInt(targetStr(),10);if(isFinite(T)){result=T;if(mode==='date')exprShown='';}count=0;eqCount=0;setMode('off');} /* efeito completo: vira calculadora normal */
+  if(wasForce){const T=parseInt(targetStr(),10);if(isFinite(T))result=T;count=0;eqCount=0;setMode('off');} /* efeito completo: vira calculadora normal */
   tokens=[];entry=null;justEval=true;}
 function backspace(){if(entry!=null&&entry!==''){entry=entry.slice(0,-1);if(entry===''||entry==='-'){entry=null;count=Math.max(0,count-1);}}}
 function clearAll(){tokens=[];entry=null;justEval=false;result=0;exprShown='';count=0;force=null;eqCount=0;dateSnap=null;resultFmt=null;}
