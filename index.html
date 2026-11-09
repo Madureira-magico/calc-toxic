@@ -237,7 +237,7 @@ input[type=file]{display:none}
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
 const isStandalone=window.navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
 if(isStandalone)document.documentElement.classList.add('sa');
-const VER='Versão 6';
+const VER='Versão 6.1';
 
 /* ---------- tamanho da tela e da calculadora ---------- */
 function fit(){const portrait=innerHeight>=innerWidth;let h=innerHeight;if(isStandalone&&portrait)h=Math.max(innerHeight,screen.height);
@@ -416,7 +416,8 @@ $$('.k').forEach(b=>{
 
 /* entrada final: qualquer toque em qualquer lugar = próximo dígito certo */
 $('#calc').addEventListener('pointerdown',e=>{
-  if(mode==='mnemo'&&mn&&mn.pos&&isDown()){e.preventDefault();e.stopPropagation(); /* tela para baixo: toques do espectador */
+  const kk=e.target.closest&&e.target.closest('.k'),kid=kk&&kk.dataset.k;
+  if(mode==='mnemo'&&mn&&mn.pos&&isDown()&&!(mn.waitAC&&(kid==='ac'||kid==='cal'))){e.preventDefault();e.stopPropagation(); /* tela para baixo: toques do espectador (AC sempre funciona) */
     if(mn.waitAC)return;
     if(!mn.shown){clearAll();mn.str=attStr(mn.att);}
     mn.shown++;const s=mn.str.slice(0,mn.shown);entry=String(parseInt(s,10));
@@ -431,13 +432,13 @@ function flash(k){k.classList.add('p');setTimeout(()=>k.classList.remove('p'),90
 /* ajustes: segurar a tecla da calculadora 1,5 s */
 let lpT=null,lpFired=false;
 function longPress(el){el.addEventListener('pointerdown',()=>{if(force)return;clearTimeout(lpT);lpFired=false;
-    lpT=setTimeout(()=>{lpFired=true;$$('.k.p').forEach(k=>{k.classList.remove('p');k._down=false;});openSettings();},1500);});
+    lpT=setTimeout(()=>{$$('.k.p').forEach(k=>{k.classList.remove('p');k._down=false;});openSettings();},1500);});
   ['pointerup','pointercancel','pointerleave'].forEach(ev=>el.addEventListener(ev,()=>clearTimeout(lpT)));}
 longPress(K.cal);longPress($('#calIc'));
 const isClear=()=>!force&&!tokens.length&&entry==null&&!justEval;
 function modePress(key,m){let t=null;
   key.addEventListener('pointerdown',()=>{clearTimeout(t);if(!isClear())return;
-    t=setTimeout(()=>{if(!isClear())return;lpFired=true;key.classList.remove('p');key._down=false;setMode(m);mn=null;store.set('mn',null);
+    t=setTimeout(()=>{if(!isClear())return;key.classList.remove('p');key._down=false;setMode(m);mn=null;store.set('mn',null);
       let txt;if(m==='num')txt=group(digitsOnly(cfg.target)||'0');
       else{const r=cryptNum(cfg.name);txt=cfg.show2==='name'?(cleanName(cfg.name)||'—'):(r&&r.num.length<=10?group(r.num):'—');}
       flashText=txt;clearTimeout(flashT);flashT=setTimeout(()=>{flashText='';render();},3000);render();},1500);});
@@ -524,21 +525,22 @@ let faceDown=false,sensorOn=false,testFace=null;
 function onOri(e){if(e.beta==null)return;sensorOn=true;
   const z=Math.cos(e.beta*Math.PI/180)*Math.cos((e.gamma||0)*Math.PI/180); /* <0 = tela virada para o chão */
   if(faceDown){if(z>-0.1)faceDown=false;}else if(z<-0.35)faceDown=true;}
-let oriListening=false;
+let oriListening=false,sensorOK=false;
 function listenOri(){if(oriListening)return;oriListening=true;addEventListener('deviceorientation',onOri);}
-function askSensor(){
-  try{if(window.DeviceOrientationEvent&&typeof DeviceOrientationEvent.requestPermission==='function'){
-      return DeviceOrientationEvent.requestPermission().then(r=>{if(r==='granted')listenOri();}).catch(()=>{});}}catch(_){}
-  listenOri();return Promise.resolve();}
+const needsAsk=()=>!!(window.DeviceOrientationEvent&&typeof DeviceOrientationEvent.requestPermission==='function');
+function askSensor(){ /* o iPhone só mostra o aviso num toque rápido; se não der, tenta de novo no próximo toque */
+  if(sensorOK)return Promise.resolve();
+  if(!needsAsk()){sensorOK=true;listenOri();return Promise.resolve();}
+  try{return DeviceOrientationEvent.requestPermission().then(r=>{if(r==='granted'){sensorOK=true;listenOri();}}).catch(()=>{});}catch(_){return Promise.resolve();}}
 if(mode==='mnemo')listenOri(); /* se o app recarregou no meio do efeito */
 const isDown=()=>testFace!=null?testFace:(sensorOn?faceDown:true); /* sem sensor: qualquer toque vale */
 
 /* ---------- segurar o 3 ---------- */
 let hold3=null,go3=false;
 K['3'].addEventListener('pointerdown',()=>{clearTimeout(hold3);go3=false;if(!isClear())return;
-  hold3=setTimeout(()=>{if(!isClear())return;lpFired=true;go3=true;K['3'].classList.remove('p');K['3']._down=false;},1500);});
+  hold3=setTimeout(()=>{if(!isClear())return;go3=true;K['3'].classList.remove('p');K['3']._down=false;},1500);});
 ['pointercancel','pointerleave'].forEach(ev=>K['3'].addEventListener(ev,()=>{if(!go3)clearTimeout(hold3);}));
-function release3(){clearTimeout(hold3);if(!go3)return;go3=false;askSensor().then(openMLock);} /* o pedido precisa vir do soltar o dedo */
+function release3(){clearTimeout(hold3);if(!go3)return;go3=false;let done=false;const go=()=>{if(!done){done=true;openMLock();}};askSensor().then(go);setTimeout(go,400);} /* o pedido precisa vir do soltar o dedo */
 K['3'].addEventListener('touchend',release3);
 K['3'].addEventListener('pointerup',release3);
 
@@ -567,6 +569,7 @@ $('#mlock').addEventListener('pointermove',e=>{if(msy==null)return;const dy=e.cl
 function endMLock(e){clearTimeout(mlp);if(msy==null)return;const dy=e.clientY-msy;msy=null;
   if(dy<-45)openMPass();else{mlc.style.transition='transform .25s';mlc.style.transform='';setTimeout(()=>mlc.style.transition='',260);}}
 $('#mlock').addEventListener('pointerup',endMLock);
+$('#mlock').addEventListener('touchend',()=>{if(!sensorOK)askSensor();});
 $('#mlock').addEventListener('pointercancel',()=>{clearTimeout(mlp);msy=null;mlc.style.transform='';});
 function openMPass(){code='';drawMDots();scrOn('mpass');mAnim($('#mpass'),[{opacity:0},{opacity:1}],280);
   const a=mAnim(mlc,[{transform:mlc.style.transform||'translateY(0)',opacity:1},{transform:'translateY(-120px)',opacity:0}],260);
@@ -579,12 +582,13 @@ const LET=['','ABC','DEF','GHI','JKL','MNO','PQRS','TUV','WXYZ'];
   k.innerHTML='<b>'+n+'</b><i>'+(n>0?LET[n-1]:'')+'</i>';
   k.addEventListener('pointerdown',e=>{e.preventDefault();k.classList.add('p');mPress(String(n));});
   const up=()=>k.classList.remove('p');['pointerup','pointerleave','pointercancel'].forEach(ev=>k.addEventListener(ev,up));
+  ['touchend','click'].forEach(ev=>k.addEventListener(ev,()=>{if(!sensorOK)askSensor();}));
   $('#mpad').appendChild(k);});
 function drawMDots(){const d=$('#mdots');d.innerHTML='';for(let i=0;i<4;i++){const s=document.createElement('div');s.className='mdt'+(i<code.length?' f':'');d.appendChild(s);}
   $('#mcancel').textContent=code.length?'Apagar':'Cancelar';
   let t='';if(code.length>=1){const s=+code[0];const su=(s>=1&&s<=4)?SYM[cfg.suits[s-1]]:'?';
     let v='';if(code.length>=2){const n=+code.slice(1,3);v=code.length===2?(code[1]<='1'?'':'?'):(n>=1&&n<=13?(LBL[n]||String(n)):'?');}
-    t=(v?v+' ':'')+su;if(code.length>=3){const e=decodeCard(code);if(e)t+='  ·  '+(posOf(e.rank,e.suit)||'?');}}
+    t=(v?v+' ':'')+su;if(code.length>=3){const e=decodeCard(code);if(e)t+='  ·  '+(posOf(e.rank,e.suit)||'?');}t+=sensorOK?'  ✓':'  ✕';}
   $('#mhint').textContent=t;}
 function mPress(n){if(mBusy||code.length>=4)return;code+=n;drawMDots();if(code.length===4){mBusy=true;setTimeout(mCheck,140);}}
 $('#mcancel').addEventListener('click',()=>{if(mBusy)return;if(code.length){code=code.slice(0,-1);drawMDots();}
