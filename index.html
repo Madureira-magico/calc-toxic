@@ -174,6 +174,7 @@ input[type=file]{display:none}
   <div class="mmo" data-m="off"><span>Calculadora normal</span><i></i></div>
   <div class="mmo" data-m="num"><span>Número</span><i></i></div>
   <div class="mmo" data-m="name"><span>Nome</span><i></i></div>
+  <div class="mmo" data-m="date"><span>Data/hora</span><i></i></div>
   <div class="mmo" data-m="mnemo"><span>Mnemônica</span><i></i></div>
 </div></div>
 <div id="cheat" class="screen"><div id="chT"></div><div id="chG"></div></div>
@@ -217,6 +218,13 @@ input[type=file]{display:none}
       <div class="row">Quantidade de números<select id="sCount"></select></div>
     </div>
     <div class="note">Até 10 dígitos. Depois que você digitar esse tanto de números (com qualquer conta: +, −, ×, ÷, e pode apertar = no meio), a tecla <b>⁺∕₋</b> vira <b>⁺∕₊</b> (próxima é soma) ou <b>⁻∕₋</b> (subtração) e aparece uma bolinha na tecla que diz quantos dígitos tem o número que falta (bolinha no 0 = 10). Aperte o sinal indicado e deixe a pessoa digitar qualquer coisa: o app mostra os números certos. No =, aparece o número final.<br>Se nada mudar, a diferença não cabe (mais de 10 dígitos) ou deu número quebrado: continue a conta.</div>
+    <span class="st">Data e hora</span>
+    <div class="box">
+      <div class="row">Quantidade de =<select id="sEqs"></select></div>
+      <div class="row">Folga (segundos)<select id="sSec"></select></div>
+    </div>
+    <div class="note">Número forçado = data e hora de daqui a alguns segundos (a folga acima), no formato <b>dd/mm/aa hh:mm</b>, fixada na hora em que o sinal troca. Depois que você apertar <b>=</b> esse tanto de vezes (com qualquer conta), a tecla <b>⁺∕₋</b> vira <b>⁺∕₊</b> (próxima é soma) ou <b>⁻∕₋</b> (subtração) e aparece a bolinha com os dígitos que faltam. No =, aparece a data e hora.</div>
+
     <span class="st">Nome (Cryptext)</span>
     <div class="box">
       <div class="row">Nome<input type="text" id="sName" autocapitalize="words" autocorrect="off" spellcheck="false" placeholder="ex.: Marcia"></div>
@@ -289,11 +297,15 @@ document.addEventListener('dblclick',e=>e.preventDefault());
 const mem={};
 const store={get(k,d){try{const v=localStorage.getItem('calc_'+k);if(v!=null)return JSON.parse(v);}catch(e){}return(k in mem)?mem[k]:d;},
   set(k,v){mem[k]=v;try{localStorage.setItem('calc_'+k,JSON.stringify(v));}catch(e){}}};
-let cfg=Object.assign({target:'1234567',count:3,name:'',zeroSub:'6',show2:'num'},store.get('cfg',{}));
+let cfg=Object.assign({target:'1234567',count:3,eqs:2,sec:30,name:'',zeroSub:'6',show2:'num'},store.get('cfg',{}));
 /* modo: 'num' (segurar 1), 'name' (segurar 2), 'mnemo' (segurar 3), 'off' = calculadora normal depois do efeito */
 let mode='off',mn=store.get('mn',null); /* sempre abre normal; só volta ao efeito da Mnemônica se o iPhone recarregar no meio dele */
 if(mn&&mn.pos&&mn.t&&Date.now()-mn.t<15*60000)mode='mnemo';else mn=null;
 function setMode(m){mode=m;store.set('mode',m);}
+/* modo Data/hora: número = dd mm aa hh mm atuais (congelado no 1º toque); resultado mostrado como dd/mm/aa hh:mm */
+let eqCount=0,dateSnap=null,resultFmt=null;
+function nowDigits(add){const d=new Date(Date.now()+(add||0)*1000),p=n=>String(n).padStart(2,'0');return p(d.getDate())+p(d.getMonth()+1)+p(d.getFullYear()%100)+p(d.getHours())+p(d.getMinutes());}
+function fmtDate(s){return s.slice(0,2)+'/'+s.slice(2,4)+'/'+s.slice(4,6)+' '+s.slice(6,8)+':'+s.slice(8,10);}
 let flashText='',flashT=null;
 const save=()=>store.set('cfg',cfg);
 
@@ -343,10 +355,11 @@ function curValue(){ /* valor se a pessoa apertasse = agora */
 function digitsOnly(s){return (s||'').replace(/[^0-9]/g,'');}
 
 /* sinal disfarçado: depois do N-ésimo número */
-function targetStr(){if(mode==='name'){const r=cryptNum(cfg.name);return r&&r.num.length<=10?r.num:'';}if(mode==='num')return digitsOnly(cfg.target);return '';}
+function targetStr(){if(mode==='date')return dateSnap||'';if(mode==='name'){const r=cryptNum(cfg.name);return r&&r.num.length<=10?r.num:'';}if(mode==='num')return digitsOnly(cfg.target);return '';}
 function computePend(){pend=null;if(force)return;
+  if(mode==='date'){if(eqCount<(+cfg.eqs||2))return;if(!dateSnap)dateSnap=nowDigits(+cfg.sec||30);} /* alvo = data/hora de daqui a X s, fixado na troca do sinal */
   const T=parseInt(targetStr(),10);if(!isFinite(T))return;
-  if(count<(+cfg.count||1))return;
+  if(mode!=='date'&&count<(+cfg.count||1))return;
   if(!justEval&&(entry==null||entry===''||entry==='-'))return;
   const v=curValue();if(v==null||!Number.isInteger(v))return;
   const d=T-v;if(d===0)return;const ds=String(Math.abs(d));if(ds.length>10)return;
@@ -396,11 +409,11 @@ function equals(){
   if(entry!=null&&entry!==''&&entry!=='-')tokens.push(entryNum(entry));
   if(!tokens.length)return;
   if(isOp(tokens[tokens.length-1]))tokens.pop();
-  exprShown=exprText(false);result=evalTokens(tokens);
-  if(wasForce){const T=parseInt(targetStr(),10);if(isFinite(T))result=T;count=0;setMode('off');} /* efeito completo: vira calculadora normal */
+  eqCount++;exprShown=exprText(false);result=evalTokens(tokens);resultFmt=null;
+  if(wasForce){const T=parseInt(targetStr(),10);if(isFinite(T)){result=T;if(mode==='date')exprShown=fmtDate(String(T).padStart(10,'0'));}count=0;eqCount=0;setMode('off');} /* efeito completo: vira calculadora normal */
   tokens=[];entry=null;justEval=true;}
 function backspace(){if(entry!=null&&entry!==''){entry=entry.slice(0,-1);if(entry===''||entry==='-'){entry=null;count=Math.max(0,count-1);}}}
-function clearAll(){tokens=[];entry=null;justEval=false;result=0;exprShown='';count=0;force=null;}
+function clearAll(){tokens=[];entry=null;justEval=false;result=0;exprShown='';count=0;force=null;eqCount=0;dateSnap=null;resultFmt=null;}
 function acDel(){if(entry!=null&&entry!=='')return backspace();clearAll();}
 function plusMinus(){if(force)return;
   if(justEval){result=-result;return;}
@@ -416,7 +429,7 @@ function fitText(el,max,min){const sp=el.firstChild;el.style.fontSize=max+'px';c
 function render(){
   const main=$('#main span'),ex=$('#expr span');
   let m;
-  if(justEval){m=fmt(result);ex.textContent=exprShown;}
+  if(justEval){m=resultFmt&&resultFmt.v===result?resultFmt.s:fmt(result);ex.textContent=exprShown;}
   else{ex.textContent=flashText;m=exprText(true);if(m===''||m==='-')m=(m||'')+'0';}
   main.textContent=m;
   const W=innerWidth;fitText($('#main'),isLand?Math.round(innerHeight*.11):Math.round(W*.185),isLand?16:Math.round(W*.09));
@@ -470,7 +483,9 @@ function modePress(key,m){let t=null;
 
 
 const sel=$('#sCount');for(let i=1;i<=9;i++){const o=document.createElement('option');o.value=i;o.textContent=i;sel.appendChild(o);}
-function openSettings(){fillMn();$('#sTarget').value=cfg.target;$('#sCount').value=String(cfg.count);$('#sName').value=cfg.name||'';$('#sZero').value=cfg.zeroSub||'6';$('#sShow2').value=cfg.show2||'num';nameRes();
+const selE=$('#sEqs');for(let i=1;i<=9;i++){const o=document.createElement('option');o.value=i;o.textContent=i;selE.appendChild(o);}
+const selS=$('#sSec');for(let s=30;s<=90;s+=5){const o=document.createElement('option');o.value=s;o.textContent=s;selS.appendChild(o);}
+function openSettings(){fillMn();$('#sTarget').value=cfg.target;$('#sCount').value=String(cfg.count);$('#sEqs').value=String(cfg.eqs||2);$('#sSec').value=String(cfg.sec||30);$('#sName').value=cfg.name||'';$('#sZero').value=cfg.zeroSub||'6';$('#sShow2').value=cfg.show2||'num';nameRes();
   $('#sVer').textContent=VER+' · '+(isStandalone?'app':'navegador');$('#settings').classList.add('on');
   try{$('#settings').animate([{transform:'translateY(100%)'},{transform:'translateY(0)'}],{duration:300,easing:'cubic-bezier(.2,.8,.2,1)'});}catch(_){}}
 function closeSettings(){document.activeElement&&document.activeElement.blur&&document.activeElement.blur();
@@ -478,6 +493,8 @@ function closeSettings(){document.activeElement&&document.activeElement.blur&&do
   const f=()=>{s.classList.remove('on');render();};if(a)a.onfinish=f;else f();}
 $('#sTarget').addEventListener('input',e=>{const v=digitsOnly(e.target.value).slice(0,10);if(e.target.value!==v)e.target.value=v;cfg.target=v;save();});
 $('#sCount').addEventListener('change',e=>{cfg.count=+e.target.value;save();});
+$('#sEqs').addEventListener('change',e=>{cfg.eqs=+e.target.value;save();});
+$('#sSec').addEventListener('change',e=>{cfg.sec=+e.target.value;save();});
 
 /* ---------- Cryptext: nome -> número ---------- */
 const UP={A:'8',B:'8',C:'0',D:'0',E:'3',F:'1',G:'9',H:'4',I:'1',J:'1',K:'71',L:'7',M:'41',N:'4',O:'0',P:'01',Q:'0',R:'21',S:'5',T:'1',U:'0',V:'1',W:'14',X:'7',Y:'7',Z:'2'};
@@ -732,6 +749,7 @@ $('#modeMenu').addEventListener('pointerdown',e=>{e.stopPropagation();if(!e.targ
 $$('.mmo').forEach(o=>{o.addEventListener('pointerdown',()=>o.classList.add('p'));['pointerup','pointerleave','pointercancel'].forEach(ev=>o.addEventListener(ev,()=>o.classList.remove('p')));
   o.addEventListener('click',e=>{e.stopPropagation();const m=o.dataset.m;closeModeMenu();clearAll();mn=null;store.set('mn',null);
     if(m==='mnemo'){setMode('off');let done=false;const go=()=>{if(!done){done=true;openMLock();}};askSensor().then(go);setTimeout(go,600);render();return;} /* o toque no menu libera o pedido de movimento */
+    if(m==='date')askSensor(); /* pede a permissão de movimento já ao escolher o modo */
     setMode(m);flashMode(m);render();});});
 function dblTap(el){let last=0;el.addEventListener('pointerup',()=>{const now=Date.now();if(now-last<350){last=0;openModeMenu(el);}else last=now;});}
 dblTap(K.cal);dblTap($('#calIc'));
