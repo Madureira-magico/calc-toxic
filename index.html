@@ -135,6 +135,7 @@ body.land .k[data-k="pm"]{background:#353535}
 #mplace .pbar button{flex:1;padding:14px;border-radius:14px;border:0;font-size:17px;font-weight:600;background:rgba(40,40,44,.9);color:#fff;font-family:inherit}
 #sTable{width:100%;min-height:220px;border:0;font-size:15px;font-family:inherit;padding:12px 16px;outline:none;resize:vertical;-webkit-user-select:text;user-select:text}
 .row .btnR+.btnR{margin-left:14px}
+.seg{display:flex;background:#e3e3e8;border-radius:8px;padding:2px;gap:2px;flex-shrink:0}.seg button{border:0;background:transparent;font-family:inherit;font-size:13px;padding:6px 9px;border-radius:6px;color:#000}.seg button.on{background:#fff;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .btnR.red{color:#ff3b30}
 .btnR:disabled{color:#c7c7cc}
 input[type=file]{display:none}
@@ -229,10 +230,11 @@ input[type=file]{display:none}
     <div class="box">
       <div class="row">Nome<input type="text" id="sName" autocapitalize="words" autocorrect="off" spellcheck="false" placeholder="ex.: Marcia"></div>
       <div class="row"><span class="res" id="sNameRes">—</span><button class="btnR" id="bShow">Mostrar</button></div>
+      <div class="row"><button class="btnR" id="bSaveName" style="margin-left:0">Salvar / Imprimir o nome</button><span class="res" id="saveSt"></span></div>
       <div class="row" id="rZero" style="display:none">Número da última letra<select id="sZero"></select></div>
       <div class="row">Ao segurar o 2, mostrar<select id="sShow2"><option value="num">Número</option><option value="name">Nome</option></select></div>
     </div>
-    <div class="note">Digite o nome como vai escrever no papel (maiúsculas e minúsculas contam). O app calcula o número (letras de trás para frente, como fica virando o papel).<br><b>Qual vale:</b> escolha <b>Número</b> ou <b>Nome</b> no menu (2 toques rápidos na tecla da calculadora). O app sempre abre como calculadora normal; depois que o número final aparece, ela volta a ser normal.</div>
+    <div class="note">Digite o nome como vai escrever no papel (maiúsculas e minúsculas contam). <b>Salvar / Imprimir</b> cria uma imagem em pé (folha A4) com o nome em Cryptext e abre o menu do iPhone: <b>Salvar Imagem</b> (vai para Fotos) ou <b>Imprimir</b>. O app calcula o número (letras de trás para frente, como fica virando o papel).<br><b>Qual vale:</b> escolha <b>Número</b> ou <b>Nome</b> no menu (2 toques rápidos na tecla da calculadora). O app sempre abre como calculadora normal. O efeito escolhido continua ligado depois de terminar (pode repetir) até você escolher outro ou <b>Calculadora normal</b> no menu.</div>
 
     <span class="st">Mnemônica</span>
     <div class="box">
@@ -242,12 +244,13 @@ input[type=file]{display:none}
     </div>
     <div class="note">Cole ou digite as 52 cartas, uma por linha, na ordem do baralho de costas (a 1ª é a de cima). Aceita "Ás de Espadas", "A de Espadas", "10 de Ouros", "Dama de Copas" etc. Só passa a valer quando as 52 estiverem certas.</div>
     <div class="box" style="margin-top:14px">
+      <div class="row">Ordem da entrada<div class="seg"><button type="button" id="bOrdSV">Naipe → Carta</button><button type="button" id="bOrdVS">Carta → Naipe</button></div></div>
       <div class="row">Dígito 1<select class="sSuit" data-i="0"></select></div>
       <div class="row">Dígito 2<select class="sSuit" data-i="1"></select></div>
       <div class="row">Dígito 3<select class="sSuit" data-i="2"></select></div>
       <div class="row">Dígito 4<select class="sSuit" data-i="3"></select></div>
     </div>
-    <div class="note">Código de 4 números na tela bloqueada: 1º = naipe (acima), 2º e 3º = valor de 01 a 13 (01 Ás, 11 Valete, 12 Dama, 13 Rei), 4º = qualquer número. Ex.: <b id="sEx"></b>.</div>
+    <div class="note">Código de 4 números na tela bloqueada: <span id="sOrdTxt"></span> Ex.: <b id="sEx"></b>.</div>
     <div class="box" style="margin-top:14px">
       <div class="row">Fundo da tela bloqueada<span><button class="btnR" id="bWall">Inserir</button><button class="btnR red" id="bWallDel">Remover</button></span></div>
       <div class="row">Tela de ícones<span><button class="btnR" id="bHome">Inserir</button><button class="btnR red" id="bHomeDel">Remover</button></span></div>
@@ -256,10 +259,10 @@ input[type=file]{display:none}
     </div>
     <input type="file" id="fWall" accept="image/*"><input type="file" id="fHome" accept="image/*">
     <div class="note" id="sMsg2"></div>
-    <div class="note"><b>Como fazer:</b> 2 toques rápidos na tecla da calculadora e escolha <b>Mnemônica</b>. Na 1ª vez o iPhone pede para usar o movimento: toque em <b>Permitir</b>. Abre a tela bloqueada: deslize para cima e digite a carta no código (embaixo aparece fraquinho a carta, a posição e ✓ se o sensor está ligado; ✕ = desligado). Na tela de ícones, toque na calculadora.<br>• <b>Tela para cima:</b> calculadora normal.<br>• <b>Tela para baixo:</b> a pessoa toca 2 vezes em qualquer lugar. 1ª vez = número de 53 a 99. Aperte <b>AC</b>. 2ª vez = posição da carta (de costas, a partir da 1ª). Aperte <b>AC</b>. 3ª vez = posição com o baralho de face para cima.<br>• Se você aceitar a 2ª e fizer qualquer outra conta, ou depois da 3ª, a calculadora vira normal.<br>• Para sair da tela bloqueada sem fazer nada: segure o dedo nela 1,5 s.<br>• Na tela de ícones, toque no ícone escolhido em "Voltar à tela bloqueada" (sem ponto definido: segure o dedo 1,5 s em qualquer lugar).</div>
+    <div class="note"><b>Como fazer:</b> 2 toques rápidos na tecla da calculadora e escolha <b>Mnemônica</b>. Na 1ª vez o iPhone pede para usar o movimento: toque em <b>Permitir</b>. Abre a tela bloqueada: deslize para cima e digite a carta no código (embaixo aparece fraquinho a carta, a posição e ✓ se o sensor está ligado; ✕ = desligado). Na tela de ícones, toque na calculadora.<br>• <b>Tela para cima:</b> calculadora normal.<br>• <b>Tela para baixo:</b> a pessoa toca 2 vezes em qualquer lugar. 1ª vez = número de 53 a 99. Aperte <b>AC</b>. 2ª vez = posição da carta (de costas, a partir da 1ª). Aperte <b>AC</b>. 3ª vez = posição com o baralho de face para cima.<br>• Se você aceitar a 2ª e fizer qualquer outra conta, ou depois da 3ª, a calculadora faz contas normais, mas continua no modo Mnemônica.<br>• Para repetir: <b>segure o + por 1,5 s</b> e abre de novo a tela bloqueada para digitar a carta. (Só na Mnemônica; nos outros modos o + é normal.)<br>• Para sair da tela bloqueada sem fazer nada: segure o dedo nela 1,5 s.<br>• Na tela de ícones, toque no ícone escolhido em "Voltar à tela bloqueada" (sem ponto definido: segure o dedo 1,5 s em qualquer lugar).</div>
 
     <span class="st">Como usar</span>
-    <div class="note">• Tecla da calculadora (embaixo, à esquerda; deitada: o ícone em cima, à direita): <b>2 toques rápidos</b> = menu (Normal, Número, Nome, Mnemônica); <b>segurar 1,5 s</b> = Ajustes.<br>• Quando o sinal aparece, só ele funciona (×, ÷, o sinal oposto, % e ⁺∕₋ ficam travados).<br>• Dica: depois do último número aperte <b>=</b>; a partir daí tudo fica travado (até os números) até você apertar o sinal certo. Só o AC continua funcionando.<br>• Na entrada final, qualquer toque em qualquer lugar da tela (vários dedos, celular virado) coloca o próximo dígito certo. A bolinha fica até completar.<br>• O = só funciona com o número completo (antes disso, conta como mais um toque). Toques a mais não fazem nada.<br>• AC zera tudo e o efeito recomeça.</div>
+    <div class="note">• Tecla da calculadora (embaixo, à esquerda; deitada: o ícone em cima, à direita): <b>2 toques rápidos</b> = menu (Normal, Número, Nome, Mnemônica); <b>segurar 1,5 s</b> = Ajustes.<br>• Quando o sinal aparece, só ele funciona (×, ÷, o sinal oposto, % e ⁺∕₋ ficam travados).<br>• Dica: depois do último número aperte <b>=</b>; a partir daí tudo fica travado (até os números) até você apertar o sinal certo. Só o AC continua funcionando.<br>• Na entrada final, qualquer toque em qualquer lugar da tela (vários dedos, celular virado) coloca o próximo dígito certo. A bolinha fica até completar.<br>• O = só funciona com o número completo (antes disso, conta como mais um toque). Toques a mais não fazem nada.<br>• AC zera tudo e o efeito recomeça.<br>• O efeito escolhido fica ligado (pode repetir quantas vezes quiser) até você escolher outro ou <b>Calculadora normal</b> no menu. Antes de emprestar o celular, escolha <b>Calculadora normal</b>.</div>
     <div class="ver" id="sVer"></div>
   </div>
 </div>
@@ -269,7 +272,7 @@ input[type=file]{display:none}
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
 const isStandalone=window.navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
 if(isStandalone)document.documentElement.classList.add('sa');
-const VER='Versão 7.2';
+const VER='Versão 7.3';
 
 /* ---------- tamanho da tela e da calculadora ---------- */
 function fit(){const portrait=innerHeight>=innerWidth;let h=innerHeight;if(isStandalone&&portrait)h=Math.max(innerHeight,screen.height);
@@ -297,7 +300,7 @@ document.addEventListener('dblclick',e=>e.preventDefault());
 const mem={};
 const store={get(k,d){try{const v=localStorage.getItem('calc_'+k);if(v!=null)return JSON.parse(v);}catch(e){}return(k in mem)?mem[k]:d;},
   set(k,v){mem[k]=v;try{localStorage.setItem('calc_'+k,JSON.stringify(v));}catch(e){}}};
-let cfg=Object.assign({target:'1234567',count:3,eqs:2,sec:30,name:'',zeroSub:'6',show2:'num'},store.get('cfg',{}));
+let cfg=Object.assign({target:'1234567',count:3,eqs:2,sec:30,name:'',zeroSub:'6',show2:'num',order:'sv'},store.get('cfg',{}));
 /* modo: 'num' (segurar 1), 'name' (segurar 2), 'mnemo' (segurar 3), 'off' = calculadora normal depois do efeito */
 let mode='off',mn=store.get('mn',null); /* sempre abre normal; só volta ao efeito da Mnemônica se o iPhone recarregar no meio dele */
 if(mn&&mn.pos&&mn.t&&Date.now()-mn.t<15*60000)mode='mnemo';else mn=null;
@@ -410,7 +413,7 @@ function equals(){
   if(!tokens.length)return;
   if(isOp(tokens[tokens.length-1]))tokens.pop();
   eqCount++;exprShown=exprText(false);result=evalTokens(tokens);resultFmt=null;
-  if(wasForce){const T=parseInt(targetStr(),10);if(isFinite(T))result=T;count=0;eqCount=0;setMode('off');} /* efeito completo: vira calculadora normal */
+  if(wasForce){const T=parseInt(targetStr(),10);if(isFinite(T))result=T;count=0;eqCount=0;dateSnap=null;} /* efeito completo: o modo continua ligado (repete na próxima conta) */
   tokens=[];entry=null;justEval=true;}
 function backspace(){if(entry!=null&&entry!==''){entry=entry.slice(0,-1);if(entry===''||entry==='-'){entry=null;count=Math.max(0,count-1);}}}
 function clearAll(){tokens=[];entry=null;justEval=false;result=0;exprShown='';count=0;force=null;eqCount=0;dateSnap=null;resultFmt=null;}
@@ -472,6 +475,12 @@ function longPress(el){el.addEventListener('pointerdown',()=>{if(force)return;cl
     lpT=setTimeout(()=>{$$('.k.p').forEach(k=>{k.classList.remove('p');k._down=false;});openSettings();},1500);});
   ['pointerup','pointercancel','pointerleave'].forEach(ev=>el.addEventListener(ev,()=>clearTimeout(lpT)));}
 longPress(K.cal);longPress($('#calIc'));
+/* Mnemônica: segurar o + 1,5 s abre de novo a tela bloqueada */
+(function(){let t=null;const k=K['+'];
+  k.addEventListener('pointerdown',()=>{clearTimeout(t);if(mode!=='mnemo')return;
+    t=setTimeout(()=>{if(mode!=='mnemo')return;lpFired=true;k.classList.remove('p');k._down=false;clearAll();mn=null;store.set('mn',null);render();
+      let done=false;const go=()=>{if(!done){done=true;openMLock();}};askSensor().then(go);setTimeout(go,600);},1500);});
+  ['pointerup','pointercancel','pointerleave'].forEach(ev=>k.addEventListener(ev,()=>clearTimeout(t)));})();
 const isClear=()=>!force&&!tokens.length&&entry==null&&!justEval;
 function modePress(key,m){let t=null;
   key.addEventListener('pointerdown',()=>{clearTimeout(t);if(!isClear())return;
@@ -533,6 +542,31 @@ async function openShow(){const r=cryptNum(cfg.name);if(!r)return;
   $('#showIn').innerHTML=esc(txt)+(r.special?'<img src="'+FINAL_A+'" alt="">':'')+esc(last);
   $('#showCap').textContent='';showStep=0;$('#show').classList.add('on');requestAnimationFrame(layoutShow);}
 $('#bShow').addEventListener('click',openShow);
+/* salvar / imprimir: imagem em pé (A4), só o nome, escrito ao longo da folha */
+async function nameImage(){const r=cryptNum(cfg.name);if(!r)return null;
+  try{await document.fonts.load('100px "Cryptext"');}catch(_){}
+  const n=(cfg.name||'').normalize('NFC').trim();let txt=n,last='';
+  if(r.special){const m=n.match(/[ao]([^A-Za-z]*)$/);if(m){txt=n.slice(0,m.index);last=m[1];}}
+  let fin=null;if(r.special){fin=new Image();fin.src=FINAL_A;try{await fin.decode();}catch(_){}}
+  const W=1654,H=2339,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  x.fillStyle='#fff';x.fillRect(0,0,W,H);
+  const measure=fs=>{x.font=fs+'px "Cryptext"';const a=x.measureText(txt).width,b=last?x.measureText(last).width:0;
+    const iw=fin?(fin.naturalWidth/fin.naturalHeight)*.66*fs+.04*fs:0;return {a,b,iw,w:a+iw+b};};
+  let fs=100,m=measure(fs);fs=Math.min(fs*(H*.86)/m.w,W*.62);m=measure(fs);
+  x.save();x.translate(W/2,H/2);x.rotate(-Math.PI/2);x.fillStyle='#000';x.textBaseline='middle';x.font=fs+'px "Cryptext"';
+  let px=-m.w/2;x.fillText(txt,px,0);px+=m.a;
+  if(fin){const ih=.66*fs,iw=m.iw-.04*fs;px+=.04*fs;const asc=x.measureText('A').actualBoundingBoxAscent||fs*.7;
+    const base=asc/2;x.drawImage(fin,px,base+.155*fs-ih,iw,ih);px+=iw;}
+  if(last)x.fillText(last,px,0);x.restore();
+  return await new Promise(res=>c.toBlob(res,'image/png'));}
+$('#bSaveName').addEventListener('click',async()=>{const st=$('#saveSt');
+  if(!cryptNum(cfg.name)){st.textContent='digite um nome';return;}
+  st.textContent='gerando…';const blob=await nameImage();if(!blob){st.textContent='erro';return;}
+  const fname='Nome-'+(cleanName(cfg.name)||'nome')+'.png';const file=new File([blob],fname,{type:'image/png'});
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file]});st.textContent='';return;}}
+  catch(e){if(e&&e.name==='AbortError'){st.textContent='';return;}}
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=fname;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),60000);st.textContent='imagem baixada';});
 let tapT=null;
 $('#show').addEventListener('click',()=>{
   if(tapT){clearTimeout(tapT);tapT=null;$('#show').classList.remove('on');return;} /* 2 toques: fecha */
@@ -551,7 +585,7 @@ if(!Array.isArray(cfg.table)||cfg.table.length!==52)cfg.table=MN_DEF.map(c=>c.sl
 let mWall=store.get('mwall',null),mHomeImg=store.get('mhome',null);
 const isMnDef=()=>cfg.table.every((c,i)=>c[0]===MN_DEF[i][0]&&c[1]===MN_DEF[i][1]);
 function posOf(r,su){const i=cfg.table.findIndex(c=>c[0]===r&&c[1]===su);return i<0?null:i+1;}
-function decodeCard(c){const s=+c[0],v=+c.slice(1,3);if(s>=1&&s<=4&&v>=1&&v<=13)return{rank:v,suit:cfg.suits[s-1]};return null;}
+function decodeCard(c){const vs=cfg.order==='vs';const s=+(vs?c[2]:c[0]),v=+(vs?c.slice(0,2):c.slice(1,3));if(s>=1&&s<=4&&v>=1&&v<=13)return{rank:v,suit:cfg.suits[s-1]};return null;}
 function mAnim(el,fr,d){try{return el.animate(fr,{duration:d,easing:'cubic-bezier(.2,.8,.2,1)'});}catch(_){return null;}}
 const scrOn=id=>$('#'+id).classList.add('on'),scrOff=id=>$('#'+id).classList.remove('on');
 
@@ -559,7 +593,7 @@ const scrOn=id=>$('#'+id).classList.add('on'),scrOff=id=>$('#'+id).classList.rem
 function saveMn(){if(mn)mn.t=Date.now();store.set('mn',mn);}
 function attStr(a){if(a===1)return String(53+Math.floor(Math.random()*47));
   const n=a===2?mn.pos:53-mn.pos;return (n<10?'0':'')+n;}
-function finishMnemo(){mn=null;saveMn();setMode('off');}
+function finishMnemo(){mn=null;saveMn();} /* contas normais, mas o modo continua Mnemônica (segurar o + abre a tela bloqueada) */
 
 /* ---------- sensor: tela para cima / para baixo ---------- */
 let faceDown=false,sensorOn=false,testFace=null;
@@ -616,9 +650,12 @@ const LET=['','ABC','DEF','GHI','JKL','MNO','PQRS','TUV','WXYZ'];
   $('#mpad').appendChild(k);});
 function drawMDots(){const d=$('#mdots');d.innerHTML='';for(let i=0;i<4;i++){const s=document.createElement('div');s.className='mdt'+(i<code.length?' f':'');d.appendChild(s);}
   $('#mcancel').textContent=code.length?'Apagar':'Cancelar';
-  let t='';if(code.length>=1){const s=+code[0];const su=(s>=1&&s<=4)?SYM[cfg.suits[s-1]]:'?';
-    let v='';if(code.length>=2){const n=+code.slice(1,3);v=code.length===2?(code[1]<='1'?'':'?'):(n>=1&&n<=13?(LBL[n]||String(n)):'?');}
-    t=(v?v+' ':'')+su;if(code.length>=3){const e=decodeCard(code);if(e)t+='  ·  '+(posOf(e.rank,e.suit)||'?');}t+=sensorOK?'  ✓':'  ✕';}
+  let t='';if(code.length>=1){const vs=cfg.order==='vs';let su='',v='';
+    if(!vs){const s=+code[0];su=(s>=1&&s<=4)?SYM[cfg.suits[s-1]]:'?';
+      if(code.length>=2){const n=+code.slice(1,3);v=code.length===2?(code[1]<='1'?'':'?'):(n>=1&&n<=13?(LBL[n]||String(n)):'?');}}
+    else{if(code.length===1)v=code[0]<='1'?'':'?';else{const n=+code.slice(0,2);v=(n>=1&&n<=13)?(LBL[n]||String(n)):'?';}
+      if(code.length>=3){const s=+code[2];su=(s>=1&&s<=4)?SYM[cfg.suits[s-1]]:'?';}}
+    t=[v,su].filter(Boolean).join(' ');if(code.length>=3){const e=decodeCard(code);if(e)t+='  ·  '+(posOf(e.rank,e.suit)||'?');}t+=sensorOK?'  ✓':'  ✕';}
   $('#mhint').textContent=t;}
 function mPress(n){if(mBusy||code.length>=4)return;code+=n;drawMDots();if(code.length===4){mBusy=true;setTimeout(mCheck,140);}}
 $('#mcancel').addEventListener('click',()=>{if(mBusy)return;if(code.length){code=code.slice(0,-1);drawMDots();}
@@ -701,7 +738,11 @@ $('#sTable').addEventListener('input',e=>{const lines=e.target.value.split('\n')
   tableMsg='';cfg.table=out;save();tableState();});
 $('#bTableReset').addEventListener('click',()=>{cfg.table=MN_DEF.map(c=>c.slice());save();tableMsg='';$('#tBox').style.display='none';tableState();});
 function fillSuits(){$$('.sSuit').forEach(s=>{s.innerHTML=Object.keys(SUITS).map(k=>'<option value="'+k+'">'+SUITS[k].n+'</option>').join('');s.value=cfg.suits[+s.dataset.i];});
-  $('#sEx').textContent=(cfg.suits.indexOf('S')+1)+'102 = 10 de Espadas';}
+  const i=cfg.suits.indexOf('S')+1,vs=cfg.order==='vs';$('#bOrdSV').className=vs?'':'on';$('#bOrdVS').className=vs?'on':'';
+  $('#sOrdTxt').textContent=vs?'1º e 2º = valor de 01 a 13 (01 Ás, 11 Valete, 12 Dama, 13 Rei), 3º = naipe (acima), 4º = qualquer número.':'1º = naipe (acima), 2º e 3º = valor de 01 a 13 (01 Ás, 11 Valete, 12 Dama, 13 Rei), 4º = qualquer número.';
+  $('#sEx').textContent=(vs?'10'+i:i+'10')+'2 = 10 de Espadas';}
+$('#bOrdSV').addEventListener('click',()=>{cfg.order='sv';save();fillSuits();});
+$('#bOrdVS').addEventListener('click',()=>{cfg.order='vs';save();fillSuits();});
 $$('.sSuit').forEach(s=>s.addEventListener('change',()=>{const i=+s.dataset.i,v=s.value,j=cfg.suits.indexOf(v);if(j>-1&&j!==i)cfg.suits[j]=cfg.suits[i];cfg.suits[i]=v;save();fillSuits();}));
 function calPosSt(){$('#exitPosSt').textContent=cfg.mexit?'definido ✓':'segurar 1,5 s';$('#calPosSt').textContent=mHomeImg?(cfg.mcal?'definido ✓':'não definido'):'automático';$('#bCalPos').disabled=!mHomeImg;}
 function fillMn(){tableState();fillSuits();calPosSt();$('#sMsg2').textContent='';}
